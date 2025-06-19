@@ -30,4 +30,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:8000/ || exit 1
 
 # Start application with Daphne for WebSocket support
-CMD ["sh", "-c", "source /opt/venv/bin/activate && python manage.py migrate && daphne -b 0.0.0.0 -p 8000 tradingapp.asgi:application"]
+CMD ["sh", "-c", "python manage.py migrate && daphne -b 0.0.0.0 -p 8000 tradingapp.asgi:application"]
