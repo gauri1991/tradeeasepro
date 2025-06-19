@@ -39,6 +39,11 @@ else:
 
 # Dynamic ALLOWED_HOSTS - ADD DOKPLOY INTERNAL NETWORK
 if PRODUCTION:
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    USE_TLS = True
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
     ALLOWED_HOSTS = [
         'tradeeasepro.com',
         'www.tradeeasepro.com',
