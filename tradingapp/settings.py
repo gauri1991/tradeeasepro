@@ -182,8 +182,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Static files storage for production
 if PRODUCTION:
-    #STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
     
 # Also add this to handle missing files gracefully
 STATICFILES_FINDERS = [
