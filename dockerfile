@@ -17,10 +17,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Create staticfiles directory
-RUN mkdir -p staticfiles
+RUN mkdir -p zerodhatrader/static/zerodhatrader/css/
+RUN mkdir -p zerodhatrader/static/zerodhatrader/js/
 
 # Collect static files (may fail initially, that's OK)
-RUN python manage.py collectstatic --noinput || true
+RUN python manage.py collectstatic --noinput --verbosity=2 || true
 
 # Expose port
 EXPOSE 8000
