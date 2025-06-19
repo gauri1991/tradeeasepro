@@ -1,0 +1,170 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - TradeEase</title>
+    <link rel="stylesheet" href="{% static 'zerodhatrader/css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'zerodhatrader/css/admin.css' %}">
+    <link rel="icon" type="image/x-icon" href="{% static 'zerodhatrader/img/favicon.ico' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <h1 class="sidebar-logo">
+                    <i class="fas fa-chart-line"></i> TradeEase Admin
+                </h1>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="{% url 'admin_dashboard' %}" class="nav-item active">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="{% url 'manage_users' %}" class="nav-item">
+                    <i class="fas fa-users"></i> Users
+                </a>
+                <a href="{% url 'manage_plans' %}" class="nav-item">
+                    <i class="fas fa-tags"></i> Subscription Plans
+                </a>
+                <a href="{% url 'manage_payments' %}" class="nav-item">
+                    <i class="fas fa-credit-card"></i> Payments
+                </a>
+                <a href="{% url 'feature_access_control' %}" class="nav-item">
+                    <i class="fas fa-lock"></i> Feature Access
+                </a>
+                <div class="nav-divider"></div>
+                <a href="{% url 'index' %}" class="nav-item">
+                    <i class="fas fa-home"></i> Back to App
+                </a>
+                <a href="{% url 'signout' %}" class="nav-item">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <div class="admin-header">
+                <h2>Dashboard Overview</h2>
+                <div class="header-actions">
+                    <span class="admin-user">
+                        <i class="fas fa-user-shield"></i> {{ request.user.username }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: var(--primary);">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Total Users</h3>
+                        <p class="stat-value">{{ total_users }}</p>
+                        <span class="stat-label">Registered users</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: var(--success);">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Active Subscriptions</h3>
+                        <p class="stat-value">{{ active_subscriptions }}</p>
+                        <span class="stat-label">Paid users</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: var(--warning);">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Trial Users</h3>
+                        <p class="stat-value">{{ trial_users }}</p>
+                        <span class="stat-label">On free trial</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: var(--info);">
+                        <i class="fas fa-rupee-sign"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Total Revenue</h3>
+                        <p class="stat-value">₹{{ total_revenue|floatformat:0 }}</p>
+                        <span class="stat-label">All time</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Payments -->
+            <div class="admin-card">
+                <div class="card-header">
+                    <h3>Recent Payments</h3>
+                    <a href="{% url 'manage_payments' %}" class="view-all">View All →</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Plan</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in recent_payments %}
+                            <tr>
+                                <td>{{ payment.user.username }}</td>
+                                <td>{{ payment.subscription_plan.name }}</td>
+                                <td>₹{{ payment.amount|floatformat:2 }}</td>
+                                <td>
+                                    <span class="status-badge status-{{ payment.status|lower }}">
+                                        {{ payment.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ payment.payment_date|date:"M d, Y" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">No payments yet</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Activity Log -->
+            <div class="admin-card">
+                <div class="card-header">
+                    <h3>Recent Activity</h3>
+                </div>
+                <div class="activity-log">
+                    {% for activity in recent_activities %}
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-circle"></i>
+                        </div>
+                        <div class="activity-content">
+                            <p><strong>{{ activity.admin_user.username }}</strong> {{ activity.action }}</p>
+                            <span class="activity-time">{{ activity.timestamp|timesince }} ago</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-center">No recent activity</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

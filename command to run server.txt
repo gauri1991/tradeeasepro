@@ -1,0 +1,9 @@
+daphne -p 8000 tradingapp.asgi:application
+
+
+#for local area access
+daphne -b 0.0.0.0 -p 8000 tradingapp.asgi:application
+
+
+
+daphne -p 8000 --websocket-timeout 300 --http-timeout 60 tradeease.asgi:application

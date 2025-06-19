@@ -1,0 +1,1652 @@
+<!-- zerodhatrader/templates/zerodhatrader/option_chain.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Option Chain Analysis - TradeEase</title>
+    <style>
+        /* Copy the same styling from your index.html to maintain consistency */
+        /* I'll only include the most relevant parts here for brevity */
+        :root {
+            /* Main color palette */
+            --background: #f9fafb;
+            --foreground: #111827;
+            --card: #ffffff;
+            --card-foreground: #111827;
+            --primary: #4CAF50;
+            --primary-hover: #43A047;
+            --primary-foreground: #ffffff;
+            --secondary: #f3f4f6;
+            --secondary-foreground: #1f2937;
+            --muted: #f3f4f6;
+            --muted-foreground: #6b7280;
+            --accent: #f3f4f6;
+            --accent-foreground: #1f2937;
+            --destructive: #F44336;
+            --destructive-hover: #E53935;
+            --destructive-foreground: #ffffff;
+            --border: #e5e7eb;
+            --input: #e5e7eb;
+            --ring: #4CAF50;
+            
+            /* Call and Put colors */
+            --call-color: #1d4ed8;
+            --call-bg: #dbeafe;
+            --put-color: #dc2626;
+            --put-bg: #fee2e2;
+            
+            /* Success and Error colors */
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            
+            /* Radius */
+            --radius: 0.5rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--foreground);
+            line-height: 1.5;
+            font-size: 0.875rem;
+            padding: 1rem;
+        }
+
+        /* Layout */
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 1rem 1.25rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: -0.025em;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -0.5rem 1.5rem;
+            gap: 1rem;
+        }
+
+        .col {
+            padding: 0 0.5rem;
+            flex: 1;
+        }
+
+        /* Card Components */
+        .card {
+            background-color: var(--card);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            transition: box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .card-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--foreground);
+            display: flex;
+            align-items: center;
+        }
+
+        .card-title::before {
+            content: '';
+            display: inline-block;
+            width: 3px;
+            height: 0.875rem;
+            background-color: var(--primary);
+            margin-right: 0.5rem;
+            border-radius: 1px;
+        }
+
+        /* Buttons */
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.375rem 0.875rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border-radius: calc(var(--radius) - 2px);
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            line-height: 1.2;
+            height: 1.875rem;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .button:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .button-primary {
+            background-color: var(--primary);
+            color: var(--primary-foreground);
+        }
+
+        .button-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* Inputs */
+        .input {
+            display: block;
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.75rem;
+            border: 1px solid var(--input);
+            border-radius: calc(var(--radius) - 2px);
+            background-color: var(--background);
+            transition: border-color 0.2s, box-shadow 0.2s;
+            height: 1.875rem;
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        }
+
+        /* Calendar Spread Analysis Specific Styles */
+        .strategy-selector {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .strategy-tab {
+            padding: 0.5rem 1rem;
+            background-color: var(--secondary);
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .strategy-tab.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .metric-card {
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            background-color: var(--background);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        .metric-title {
+            font-size: 0.75rem;
+            color: var(--muted-foreground);
+        }
+
+        .metric-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .positive-value {
+            color: var(--success);
+        }
+
+        .negative-value {
+            color: var(--danger);
+        }
+
+        .calendar-spread-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .calendar-spread-table th,
+        .calendar-spread-table td {
+            padding: 0.625rem 0.75rem;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .calendar-spread-table th {
+            font-weight: 600;
+            color: #1b5e20; /* Dark green for headers */
+            background-color: #c8e6c9; /* Light green for header bg */
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .highlighted-row {
+            background-color: rgba(76, 175, 80, 0.1);
+        }
+
+        .option-chain-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .control-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Badges for metrics */
+        .badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .badge-success {
+            background-color: var(--success-light);
+            color: var(--success);
+        }
+
+        .badge-danger {
+            background-color: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .badge-warning {
+            background-color: var(--warning-light);
+            color: var(--warning);
+        }
+
+        /* Tab navigation for near/far month selection */
+        .month-tabs {
+            display: flex;
+            margin-bottom: 1rem;
+        }
+
+        .month-tab {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-top: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .month-tab:first-child {
+            border-left: 1px solid var(--border);
+            border-top-left-radius: var(--radius);
+            border-bottom-left-radius: var(--radius);
+        }
+
+        .month-tab:last-child {
+            border-top-right-radius: var(--radius);
+            border-bottom-right-radius: var(--radius);
+        }
+
+        .month-tab.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Side-by-side view for calendar spreads */
+        .options-container {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .options-column {
+            flex: 1;
+        }
+
+        .spread-metrics {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .spread-metric-card {
+            flex: 1;
+            padding: 1rem;
+            background-color: var(--card);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .spread-metric-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .spread-metric-title {
+            font-size: 0.75rem;
+            color: var(--muted-foreground);
+        }
+
+        /* Connection status and other utility classes (copied from your original CSS) */
+        .connection-status {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .connection-status span {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.375rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .connection-status span::before {
+            content: '';
+            display: inline-block;
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+            margin-right: 0.375rem;
+        }
+
+        .text-success {
+            background-color: var(--success-light);
+            color: var(--success);
+        }
+
+        .text-success::before {
+            background-color: var(--success);
+        }
+
+        .text-danger {
+            background-color: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .text-danger::before {
+            background-color: var(--danger);
+        }
+
+        /* Calendar spread recommendations */
+        .recommendations {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: var(--card);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        .recommendation-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .recommendation-item:last-child {
+            border-bottom: none;
+        }
+
+        .recommendation-title {
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .recommendation-desc {
+            color: var(--muted-foreground);
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+
+        .high-probability {
+            color: var(--success);
+        }
+
+        .medium-probability {
+            color: var(--warning);
+        }
+
+        .low-probability {
+            color: var(--danger);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>Option Chain Analysis</h1>
+            <div class="connection-status">
+                <span id="connection-badge" class="text-sm text-danger">Disconnected</span>
+            </div>
+        </header>
+
+        <!-- Strategy selector -->
+        <div class="strategy-selector">
+                <div class="strategy-tab active" data-strategy="calendar-spread">Calendar Spread</div>
+                <div class="strategy-tab" data-strategy="vertical-spread">Vertical Spread</div>
+                <div class="strategy-tab" data-strategy="iron-condor">Iron Condor</div>
+                <div class="strategy-tab" data-strategy="butterfly">Butterfly</div>
+                <div class="strategy-tab" data-strategy="diagonal-spread">Diagonal Spread</div>
+                <div class="strategy-tab" data-strategy="ratio-spread">Ratio Spread</div>
+        </div>
+
+        <!-- Option Chain Controls -->
+        <div class="card">
+            <div class="p-4">
+                <h2 class="card-title">Calendar Spread Analysis</h2>
+                <div class="option-chain-controls">
+                    <!-- Index Selection -->
+                    <div class="control-group">
+                        <label class="control-label">Index:</label>
+                        <select id="index-select" class="input">
+                            <option value="NIFTY">NIFTY</option>
+                            <option value="BANKNIFTY">BANK NIFTY</option>
+                        </select>
+                    </div>
+
+                    <!-- Spot Price -->
+                    <div class="control-group">
+                        <label class="control-label">Spot Price:</label>
+                        <input type="number" id="spot-price" class="input" placeholder="Spot Price">
+                    </div>
+
+                    <!-- Near Month Expiry -->
+                    <div class="control-group">
+                        <label class="control-label">Near Month:</label>
+                        <select id="near-month-expiry" class="input">
+                            <option value="">Select Expiry</option>
+                        </select>
+                    </div>
+
+                    <!-- Far Month Expiry -->
+                    <div class="control-group">
+                        <label class="control-label">Far Month:</label>
+                        <select id="far-month-expiry" class="input">
+                            <option value="">Select Expiry</option>
+                        </select>
+                    </div>
+
+                    <!-- Option Type -->
+                    <div class="control-group">
+                        <label class="control-label">Type:</label>
+                        <select id="option-type" class="input">
+                            <option value="CE">Call Option</option>
+                            <option value="PE">Put Option</option>
+                        </select>
+                    </div>
+
+                    <!-- Quantity -->
+                    <div class="control-group">
+                        <label class="control-label">Quantity:</label>
+                        <input type="number" id="quantity" class="input" value="75" min="75" step="75">
+                    </div>
+
+                    <!-- Load Button -->
+                    <button id="load-spreads-btn" class="button button-primary">Load Spreads</button>
+                </div>
+            </div>
+        </div>
+        
+
+        <!-- Spread Metrics -->
+        <div class="spread-metrics">
+            <div class="spread-metric-card">
+                <div class="spread-metric-value" id="avg-iv-diff">-</div>
+                <div class="spread-metric-title">Avg. IV Differential</div>
+            </div>
+            <div class="spread-metric-card">
+                <div class="spread-metric-value" id="avg-theta-ratio">-</div>
+                <div class="spread-metric-title">Avg. Theta Ratio</div>
+            </div>
+            <div class="spread-metric-card">
+                <div class="spread-metric-value" id="avg-debit">-</div>
+                <div class="spread-metric-title">Avg. Debit Amount</div>
+            </div>
+            <div class="spread-metric-card">
+                <div class="spread-metric-value" id="spreads-count">-</div>
+                <div class="spread-metric-title">Available Spreads</div>
+            </div>
+        </div>
+
+        <!-- Option Chain Table -->
+        <div class="card">
+            <table class="calendar-spread-table" id="calendar-spread-table">
+                <thead>
+                    <tr>
+                        <th>Strike</th>
+                        <th>Near Month Option</th>
+                        <th>Near Month IV</th>
+                        <th>Near Month Premium</th>
+                        <th>Far Month Option</th>
+                        <th>Far Month IV</th>
+                        <th>Far Month Premium</th>
+                        <th>Debit</th>
+                        <th>IV Diff</th>
+                        <th>Theta Ratio</th>
+                        <th>Probability</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="12" class="text-center">Select indices and expiry dates to load calendar spreads</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="recommendations">
+            <h2 class="card-title">Calendar Spread Recommendations</h2>
+            <div id="recommendations-container">
+                <div class="recommendation-item">
+                    <div>
+                        <div class="recommendation-title">Select expiry dates to view recommendations</div>
+                        <div class="recommendation-desc">The system will analyze IV skew and other factors to identify high-probability calendar spreads</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WebSocket Debug Panel -->
+        <div class="card" style="margin-top: 1rem;">
+            <h2 class="card-title">WebSocket Debug</h2>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <button id="clear-ws-log" class="button button-outline" style="font-size: 0.75rem;">Clear Log</button>
+                <label>
+                    <input type="checkbox" id="auto-scroll" checked>
+                    Auto-scroll
+                </label>
+            </div>
+            <div id="ws-debug-log" style="max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 12px; background: #f5f5f5; padding: 0.5rem; border-radius: 0.25rem; white-space: pre-wrap; word-break: break-word;">WebSocket debug log will appear here</div>
+        </div>
+    </div>
+
+    <script>
+        // Application state
+        const state = {
+            isAuthenticated: false,
+            sessionToken: null,
+            wsConnection: null,
+            wsConnected: false,
+            instruments: [],
+            nearMonthOptions: [],
+            farMonthOptions: [],
+            calendarSpreads: []
+        };
+
+        // DOM Elements
+        const indexSelect = document.getElementById('index-select');
+        const spotPrice = document.getElementById('spot-price');
+        const nearMonthExpiry = document.getElementById('near-month-expiry');
+        const farMonthExpiry = document.getElementById('far-month-expiry');
+        const optionType = document.getElementById('option-type');
+        const quantity = document.getElementById('quantity');
+        const loadSpreadsBtn = document.getElementById('load-spreads-btn');
+        const calendarSpreadTable = document.getElementById('calendar-spread-table');
+        const connectionBadge = document.getElementById('connection-badge');
+        const wsDebugLog = document.getElementById('ws-debug-log');
+        const clearWsLogBtn = document.getElementById('clear-ws-log');
+        const autoScrollCheckbox = document.getElementById('auto-scroll');
+        
+        // Metric Elements
+        const avgIvDiff = document.getElementById('avg-iv-diff');
+        const avgThetaRatio = document.getElementById('avg-theta-ratio');
+        const avgDebit = document.getElementById('avg-debit');
+        const spreadsCount = document.getElementById('spreads-count');
+        const recommendationsContainer = document.getElementById('recommendations-container');
+
+        // Helper functions
+        function updateStatus(message) {
+            console.log(message);
+            // Also log to WebSocket debug if available
+            if (wsDebugLog) {
+                addWsDebugLog(message);
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            alert(message); // Simple alert for now
+        }
+
+        // Get CSRF token from cookies
+        function getCsrfToken() {
+            const name = 'csrftoken';
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return '';
+        }
+
+        // Check for saved auth token on page load
+        async function checkSavedAuthToken() {
+            try {
+                updateStatus('Checking for saved auth token...');
+                
+                const response = await fetch('/api/auth-status/');
+                const data = await response.json();
+                
+                if (data.status === 'authenticated' && data.access_token) {
+                    state.sessionToken = data.access_token;
+                    state.isAuthenticated = true;
+                    
+                    updateStatus('Found valid authentication token');
+                    updateConnectionStatus();
+                    
+                    // Proceed to fetch instruments
+                    fetchInstruments();
+                    
+                    // Also connect to WebSocket
+                    connectWebSocket();
+                } else {
+                    // Token is missing or invalid
+                    state.sessionToken = null;
+                    state.isAuthenticated = false;
+                    
+                    updateStatus(data.message || 'No valid authentication token found');
+                    updateConnectionStatus();
+                    
+                    // Prompt user to go back to main page and login
+                    showToast('Please login on the main page first');
+                }
+            } catch (error) {
+                console.error('Error checking auth status:', error);
+                updateStatus(`Error: ${error.message}`);
+                
+                // Reset auth state on error
+                state.sessionToken = null;
+                state.isAuthenticated = false;
+                updateConnectionStatus();
+            }
+        }
+
+        // Update connection indicator
+        function updateConnectionStatus() {
+            if (state.isAuthenticated) {
+                connectionBadge.textContent = 'Authenticated';
+                connectionBadge.className = 'text-sm text-success';
+            } else {
+                connectionBadge.textContent = 'Not Authenticated';
+                connectionBadge.className = 'text-sm text-danger';
+            }
+        }
+
+        // Add WebSocket debug logging function
+        function addWsDebugLog(message) {
+            if (!wsDebugLog) return;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            
+            // Format JSON for better readability if message is JSON
+            let formattedMessage = message;
+            if (typeof message === 'string' && message.startsWith('Tick data:')) {
+                try {
+                    const tickData = JSON.parse(message.replace('Tick data: ', ''));
+                    formattedMessage = `Tick data received:
+    Token: ${tickData.instrument_token}
+    Last Price: ${tickData.last_price}
+    ${tickData.volume_traded ? 'Volume: ' + tickData.volume_traded : ''}
+    ${tickData.oi ? 'OI: ' + tickData.oi : ''}`;
+                } catch (e) {
+                    // If parsing fails, use the original message
+                }
+            }
+            
+            // Prepend the new log entry
+            const newEntry = document.createElement('div');
+            newEntry.className = 'log-entry';
+            newEntry.innerHTML = `<span class="log-time">[${timestamp}]</span> <span class="log-msg">${formattedMessage}</span>`;
+            
+            // Style based on content type
+            if (message.includes('Error')) {
+                newEntry.style.color = 'red';
+            } else if (message.includes('Tick data')) {
+                newEntry.style.color = 'green';
+            } else if (message.includes('Subscribed')) {
+                newEntry.style.color = 'blue';
+            }
+            
+            wsDebugLog.insertBefore(newEntry, wsDebugLog.firstChild);
+            
+            // Keep only the latest 20 entries
+            while (wsDebugLog.children.length > 20) {
+                wsDebugLog.removeChild(wsDebugLog.lastChild);
+            }
+            
+            // Auto-scroll if enabled
+            if (autoScrollCheckbox && autoScrollCheckbox.checked) {
+                wsDebugLog.scrollTop = 0;
+            }
+        }
+
+        // Fetch instruments from database
+        async function fetchInstruments() {
+            try {
+                updateStatus('Fetching instruments...');
+        
+                const response = await fetch('/api/instruments/');
+                
+                const data = await response.json();
+        
+                if (data.status === 'success') {
+                    state.instruments = data.instruments || [];
+                    updateStatus(`Loaded ${state.instruments.length} instruments`);
+                    
+                    // Populate expiry dropdowns
+                    populateExpiryDropdowns();
+                } else {
+                    updateStatus(`Failed to fetch instruments: ${data.message}`);
+                }
+            } catch (error) {
+                console.error('Instrument fetch error:', error);
+                updateStatus(`Error: ${error.message}`);
+            }
+        }
+
+        // Populate Expiry Dropdowns for selected index
+        function populateExpiryDropdowns() {
+            if (!state.instruments || state.instruments.length === 0) {
+                console.warn('No instruments available to populate expiry dropdowns');
+                return;
+            }
+            
+            const selectedIndex = indexSelect.value;
+            
+            // Filter for selected index options
+            const indexOptions = state.instruments.filter(instr => 
+                instr.tradingsymbol.includes(selectedIndex) && 
+                (instr.instrument_type === 'CE' || instr.instrument_type === 'PE') &&
+                (instr.exchange === 'NFO')
+            );
+            
+            // Get unique expiry dates
+            const expiryDates = [...new Set(indexOptions.map(opt => opt.expiry))].filter(Boolean).sort();
+            
+            // Populate Near Month expiry dropdown
+            if (nearMonthExpiry) {
+                const currentValue = nearMonthExpiry.value;
+                nearMonthExpiry.innerHTML = '<option value="">Select Expiry</option>';
+                expiryDates.forEach(expiry => {
+                    const option = document.createElement('option');
+                    option.value = expiry;
+                    option.textContent = formatDate(expiry);
+                    nearMonthExpiry.appendChild(option);
+                });
+                
+                // Restore selected value if it still exists
+                if (currentValue && expiryDates.includes(currentValue)) {
+                    nearMonthExpiry.value = currentValue;
+                }
+            }
+            
+            // Populate Far Month expiry dropdown
+            if (farMonthExpiry) {
+                const currentValue = farMonthExpiry.value;
+                farMonthExpiry.innerHTML = '<option value="">Select Expiry</option>';
+                expiryDates.forEach(expiry => {
+                    const option = document.createElement('option');
+                    option.value = expiry;
+                    option.textContent = formatDate(expiry);
+                    farMonthExpiry.appendChild(option);
+                });
+                
+                // Restore selected value if it still exists
+                if (currentValue && expiryDates.includes(currentValue)) {
+                    farMonthExpiry.value = currentValue;
+                }
+            }
+            
+            updateStatus(`Loaded ${expiryDates.length} expiry dates for ${selectedIndex}`);
+
+            // Set default spot price based on index
+            if (spotPrice && !spotPrice.value) {
+                if (selectedIndex === 'NIFTY') {
+                    spotPrice.value = '22500';
+                } else if (selectedIndex === 'BANKNIFTY') {
+                    spotPrice.value = '48000';
+                }
+            }
+            
+            // Set default quantity based on index
+            if (quantity) {
+                if (selectedIndex === 'NIFTY') {
+                    quantity.value = '75';
+                    quantity.min = '75';
+                    quantity.step = '75';
+                } else if (selectedIndex === 'BANKNIFTY') {
+                    quantity.value = '25';
+                    quantity.min = '25';
+                    quantity.step = '25';
+                }
+            }
+        }
+
+        // Format date for display
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { 
+                day: '2-digit', 
+                month: 'short', 
+                year: 'numeric' 
+            });
+        }
+
+        // Connect WebSocket
+        function connectWebSocket() {
+            if (!state.isAuthenticated) {
+                updateStatus('Please login first');
+                showToast('Please login first');
+                return;
+            }
+
+            try {
+                updateStatus('Connecting to WebSocket...');
+                
+                // Host to connect to
+                const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${wsProtocol}//${window.location.host}/ws/ticker/`;
+                
+                // Create WebSocket connection
+                const ws = new WebSocket(wsUrl);
+                
+                ws.onopen = () => {
+                    state.wsConnected = true;
+                    state.wsConnection = ws;
+                    updateStatus('WebSocket connected');
+                    
+                    // Update connection badge
+                    connectionBadge.textContent = 'Connected';
+                    connectionBadge.className = 'text-sm text-success';
+                    
+                    // Subscribe to loaded options instruments if any
+                    subscribeToLoadedInstruments();
+                };
+                
+                ws.onclose = (event) => {
+                    state.wsConnected = false;
+                    state.wsConnection = null;
+                    updateStatus(`WebSocket disconnected: Code ${event.code}`);
+                    
+                    // Update connection badge
+                    connectionBadge.textContent = 'Disconnected';
+                    connectionBadge.className = 'text-sm text-danger';
+                    
+                    // Try to reconnect after 5 seconds
+                    setTimeout(() => {
+                        if (!state.wsConnected) {
+                            updateStatus('Attempting to reconnect WebSocket...');
+                            connectWebSocket();
+                        }
+                    }, 5000);
+                };
+                
+                ws.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                    updateStatus('WebSocket error');
+                    addWsDebugLog(`Error: WebSocket connection error`);
+                };
+                
+                ws.onmessage = handleWebSocketMessage;
+            } catch (error) {
+                console.error('WebSocket connection error:', error);
+                updateStatus(`Error: ${error.message}`);
+                addWsDebugLog(`Error: ${error.message}`);
+            }
+        }
+
+        // Handle WebSocket message
+        function handleWebSocketMessage(event) {
+            try {
+                // Store the raw data
+                const rawData = event.data;
+                
+                // Handle the data
+                const data = JSON.parse(rawData);
+                
+                // Check if it's a tick event
+                if (data.type === 'tick' && data.data) {
+                    const tickData = data.data;
+                    console.log('Tick received:', tickData);
+                    
+                    // Update instrument price
+                    updateOptionPrice(tickData);
+                } else if (data.type === 'connection_established') {
+                    addWsDebugLog(`Connection established: ${data.message}, Consumer ID: ${data.consumer_id}`);
+                } else if (data.type === 'subscription_status') {
+                    addWsDebugLog(`Subscription status: ${data.message}, Success: ${data.success}, Tokens: ${JSON.stringify(data.tokens)}`);
+                } else if (data.type === 'error') {
+                    addWsDebugLog(`Error from server: ${data.message}`);
+                }
+            } catch (error) {
+                console.error('WebSocket message processing error:', error);
+                addWsDebugLog(`Error processing message: ${error.message}`);
+            }
+        }
+
+        // Subscribe to instrument tokens via WebSocket
+        function subscribeToTokens(tokens) {
+            if (!state.wsConnected || !state.wsConnection) {
+                updateStatus('WebSocket not connected');
+                return;
+            }
+            
+            // Filter out invalid tokens
+            const validTokens = tokens.filter(token => token && !isNaN(parseInt(token)));
+            
+            if (validTokens.length === 0) {
+                updateStatus('No valid tokens to subscribe to');
+                return;
+            }
+
+            const message = {
+                action: 'subscribe',
+                tokens: validTokens
+            };
+            
+            state.wsConnection.send(JSON.stringify(message));
+            updateStatus(`Subscribing to ${validTokens.length} instruments`);
+            addWsDebugLog(`Sending subscription request for tokens: ${validTokens.join(', ')}`);
+        }
+
+        // Update option price from tick data
+        function updateOptionPrice(tickData) {
+            if (!tickData || !tickData.instrument_token) {
+                console.warn("Invalid tick data received:", tickData);
+                return;
+            }
+            
+            const token = parseInt(tickData.instrument_token);
+            const newPrice = parseFloat(tickData.last_price);
+            
+            if (isNaN(newPrice)) {
+                console.warn(`Tick for token ${token} has invalid price:`, tickData.last_price);
+                return;
+            }
+            
+            // Update near month options
+            const nearMonthIndex = state.nearMonthOptions.findIndex(
+                option => option.instrument_token === token
+            );
+            if (nearMonthIndex >= 0) {
+                state.nearMonthOptions[nearMonthIndex].last_price = newPrice;
+                updateCalendarSpreadTable();
+            }
+            
+            // Update far month options
+            const farMonthIndex = state.farMonthOptions.findIndex(
+                option => option.instrument_token === token
+            );
+            if (farMonthIndex >= 0) {
+                state.farMonthOptions[farMonthIndex].last_price = newPrice;
+                updateCalendarSpreadTable();
+            }
+            
+            // Update any price cells in the table
+            const priceCells = document.querySelectorAll(`[data-token="${token}"]`);
+            priceCells.forEach(cell => {
+                const oldPrice = parseFloat(cell.textContent) || 0;
+                cell.textContent = newPrice.toFixed(2);
+                
+                // Add visual indicator for price change
+                cell.classList.remove('price-up', 'price-down');
+                
+                if (newPrice > oldPrice) {
+                    cell.classList.add('price-up');
+                } else if (newPrice < oldPrice) {
+                    cell.classList.add('price-down');
+                }
+            });
+            
+            // Update calendar spreads data and metrics
+            calculateCalendarSpreads();
+        }
+
+        // Subscribe to all currently loaded instruments
+        function subscribeToLoadedInstruments() {
+            if (!state.wsConnected || !state.wsConnection) {
+                return;
+            }
+            
+            const tokens = [];
+            
+            // Add tokens from near month options
+            state.nearMonthOptions.forEach(option => {
+                if (option.instrument_token && !tokens.includes(option.instrument_token)) {
+                    tokens.push(option.instrument_token);
+                }
+            });
+            
+            // Add tokens from far month options
+            state.farMonthOptions.forEach(option => {
+                if (option.instrument_token && !tokens.includes(option.instrument_token)) {
+                    tokens.push(option.instrument_token);
+                }
+            });
+            
+            // Subscribe to tokens
+            if (tokens.length > 0) {
+                subscribeToTokens(tokens);
+            }
+        }
+
+        // Load options for calendar spreads
+        async function loadOptions() {
+            try {
+                const selectedIndex = indexSelect.value;
+                const nearMonth = nearMonthExpiry.value;
+                const farMonth = farMonthExpiry.value;
+                const selectType = optionType.value;
+                const spot = parseFloat(spotPrice.value);
+                
+                // Validate inputs
+                if (!selectedIndex || !nearMonth || !farMonth || !selectType || isNaN(spot)) {
+                    showToast('Please fill in all required fields');
+                    return;
+                }
+                
+                // Ensure near month is before far month
+                if (new Date(nearMonth) > new Date(farMonth)) {
+                    showToast('Near month expiry should be earlier than far month expiry');
+                    return;
+                }
+                
+                updateStatus(`Loading ${selectedIndex} ${selectType} options for calendar spreads...`);
+                
+                // Filter options for near month
+                state.nearMonthOptions = state.instruments.filter(instr => 
+                    instr.tradingsymbol.includes(selectedIndex) && 
+                    instr.instrument_type === selectType &&
+                    instr.expiry === nearMonth
+                );
+                
+                // Filter options for far month
+                state.farMonthOptions = state.instruments.filter(instr => 
+                    instr.tradingsymbol.includes(selectedIndex) && 
+                    instr.instrument_type === selectType &&
+                    instr.expiry === farMonth
+                );
+                
+                // Calculate strikes to display based on spot price
+                let strikesToShow = [];
+                
+                // Get 5 strikes above and 5 strikes below or at the spot price
+                const allStrikes = [...new Set([
+                    ...state.nearMonthOptions.map(opt => opt.strike),
+                    ...state.farMonthOptions.map(opt => opt.strike)
+                ])].filter(Boolean).map(Number).sort((a, b) => a - b);
+                
+                // Find the closest strike to spot price
+                let closestStrike = allStrikes[0];
+                let minDiff = Math.abs(allStrikes[0] - spot);
+                
+                allStrikes.forEach(strike => {
+                    const diff = Math.abs(strike - spot);
+                    if (diff < minDiff) {
+                        minDiff = diff;
+                        closestStrike = strike;
+                    }
+                });
+                
+                // Get 5 strikes above and 5 strikes below the closest strike
+                const lowerIndex = allStrikes.indexOf(closestStrike);
+                const lowerBound = Math.max(0, lowerIndex - 5);
+                const upperBound = Math.min(allStrikes.length, lowerIndex + 6);
+                
+                strikesToShow = allStrikes.slice(lowerBound, upperBound);
+                
+                // Now get quotes for all these options
+                const nearMonthTokens = state.nearMonthOptions
+                    .filter(opt => strikesToShow.includes(opt.strike))
+                    .map(opt => opt.instrument_token);
+                
+                const farMonthTokens = state.farMonthOptions
+                    .filter(opt => strikesToShow.includes(opt.strike))
+                    .map(opt => opt.instrument_token);
+                
+                // Get LTP for these options
+                await fetchLTP([...nearMonthTokens, ...farMonthTokens]);
+                
+                // Subscribe to these tokens via WebSocket
+                if (state.wsConnected) {
+                    subscribeToTokens([...nearMonthTokens, ...farMonthTokens]);
+                }
+                
+                // Calculate calendar spreads
+                calculateCalendarSpreads();
+                
+                // Update the UI
+                updateCalendarSpreadTable();
+                
+                updateStatus(`Loaded calendar spreads for ${selectedIndex} ${selectType} options`);
+            } catch (error) {
+                console.error('Error loading options:', error);
+                updateStatus(`Error: ${error.message}`);
+            }
+        }
+
+        // Fetch Last Traded Price (LTP) for options
+        async function fetchLTP(tokens) {
+            if (!tokens || tokens.length === 0) return;
+            
+            try {
+                // Since we can't directly get LTP from the API in this setup,
+                // we'll simulate fetching LTP by using mock data
+                // In a real scenario, you would fetch quotes for these tokens from your API
+                
+                // For now, use random LTP values for demonstration
+                // In reality, you'd replace this with actual API call
+                tokens.forEach(token => {
+                    // Find the option in near month
+                    const nearOption = state.nearMonthOptions.find(opt => opt.instrument_token === token);
+                    if (nearOption) {
+                        // If LTP not already set (e.g. from WebSocket), set a default
+                        if (!nearOption.last_price) {
+                            // Set a random value for demonstration
+                            nearOption.last_price = parseFloat((50 + Math.random() * 50).toFixed(2));
+                            
+                            // Also set IV for demonstration
+                            nearOption.iv = parseFloat((20 + Math.random() * 10).toFixed(2));
+                            nearOption.theta = parseFloat((-5 - Math.random() * 5).toFixed(2));
+                        }
+                    }
+                    
+                    // Find the option in far month
+                    const farOption = state.farMonthOptions.find(opt => opt.instrument_token === token);
+                    if (farOption) {
+                        // If LTP not already set (e.g. from WebSocket), set a default
+                        if (!farOption.last_price) {
+                            // Far month options typically have higher premium
+                            farOption.last_price = parseFloat((80 + Math.random() * 70).toFixed(2));
+                            
+                            // Also set IV for demonstration
+                            farOption.iv = parseFloat((18 + Math.random() * 8).toFixed(2));
+                            farOption.theta = parseFloat((-2 - Math.random() * 2.5).toFixed(2));
+                        }
+                    }
+                });
+                
+                updateStatus(`Updated LTP for ${tokens.length} options`);
+            } catch (error) {
+                console.error('Error fetching LTP:', error);
+                updateStatus(`Error fetching LTP: ${error.message}`);
+            }
+        }
+
+        // Calculate Calendar Spreads
+        function calculateCalendarSpreads() {
+            // Reset calendar spreads
+            state.calendarSpreads = [];
+            
+            // Get common strikes between near and far month
+            const nearStrikes = state.nearMonthOptions.map(opt => opt.strike);
+            const farStrikes = state.farMonthOptions.map(opt => opt.strike);
+            
+            // Find common strikes
+            const commonStrikes = nearStrikes.filter(strike => farStrikes.includes(strike));
+            
+            // Create calendar spreads
+            commonStrikes.forEach(strike => {
+                const nearOption = state.nearMonthOptions.find(opt => opt.strike === strike);
+                const farOption = state.farMonthOptions.find(opt => opt.strike === strike);
+                
+                if (nearOption && farOption && nearOption.last_price && farOption.last_price) {
+                    // Calculate debit (far - near)
+                    const debit = farOption.last_price - nearOption.last_price;
+                    
+                    // Calculate IV differential (near - far)
+                    const ivDiff = (nearOption.iv || 20) - (farOption.iv || 18);
+                    
+                    // Calculate theta ratio
+                    const thetaRatio = (nearOption.theta || -5) / (farOption.theta || -2);
+                    const thetaRatioAbs = Math.abs(thetaRatio);
+                    
+                    // Calculate probability (simplified estimation)
+                    let probability = 'Medium';
+                    
+                    // For calendar spreads, good signs are:
+                    // 1. Higher IV in front month
+                    // 2. High theta ratio (front month decays faster)
+                    // 3. Reasonable debit amount
+                    let score = 0;
+                    
+                    if (ivDiff > 0) score += 1; // Higher IV in front month is good
+                    if (thetaRatioAbs > 2) score += 1; // Higher theta ratio is good (front month decays faster)
+                    if (debit > 0 && debit < (farOption.last_price * 0.3)) score += 1; // Reasonable debit is good
+                    
+                    if (score >= 2) {
+                        probability = 'High';
+                    } else if (score <= 0) {
+                        probability = 'Low';
+                    }
+                    
+                    // Add to calendar spreads
+                    state.calendarSpreads.push({
+                        strike,
+                        nearOption,
+                        farOption,
+                        debit,
+                        ivDiff,
+                        thetaRatio: thetaRatioAbs,
+                        probability
+                    });
+                }
+            });
+            
+            // Sort by probability (High to Low)
+            state.calendarSpreads.sort((a, b) => {
+                const probOrder = { 'High': 0, 'Medium': 1, 'Low': 2 };
+                return probOrder[a.probability] - probOrder[b.probability];
+            });
+            
+            // Update metrics
+            updateMetrics();
+            
+            // Update recommendations
+            updateRecommendations();
+        }
+
+        // Update Calendar Spread Table
+        function updateCalendarSpreadTable() {
+            if (!calendarSpreadTable) return;
+            
+            if (state.calendarSpreads.length === 0) {
+                calendarSpreadTable.querySelector('tbody').innerHTML = 
+                    '<tr><td colspan="12" class="text-center">No calendar spreads available</td></tr>';
+                return;
+            }
+            
+            // Clear table
+            const tbody = calendarSpreadTable.querySelector('tbody');
+            tbody.innerHTML = '';
+            
+            // Add rows for each spread
+            state.calendarSpreads.forEach(spread => {
+                const row = document.createElement('tr');
+                
+                // Highlight high probability rows
+                if (spread.probability === 'High') {
+                    row.className = 'highlighted-row';
+                }
+                
+                row.innerHTML = `
+                    <td>${spread.strike}</td>
+                    <td>${spread.nearOption.tradingsymbol}</td>
+                    <td>${spread.nearOption.iv?.toFixed(2) || '-'}%</td>
+                    <td data-token="${spread.nearOption.instrument_token}">${spread.nearOption.last_price?.toFixed(2) || '-'}</td>
+                    <td>${spread.farOption.tradingsymbol}</td>
+                    <td>${spread.farOption.iv?.toFixed(2) || '-'}%</td>
+                    <td data-token="${spread.farOption.instrument_token}">${spread.farOption.last_price?.toFixed(2) || '-'}</td>
+                    <td class="${spread.debit > 0 ? 'positive-value' : 'negative-value'}">${spread.debit.toFixed(2)}</td>
+                    <td class="${spread.ivDiff > 0 ? 'positive-value' : 'negative-value'}">${spread.ivDiff.toFixed(2)}%</td>
+                    <td>${spread.thetaRatio.toFixed(2)}</td>
+                    <td>
+                        <span class="badge ${spread.probability === 'High' ? 'badge-success' : 
+                                           spread.probability === 'Medium' ? 'badge-warning' : 'badge-danger'}">
+                            ${spread.probability}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="button button-primary execute-spread-btn" 
+                                data-near-token="${spread.nearOption.instrument_token}"
+                                data-far-token="${spread.farOption.instrument_token}"
+                                data-near-symbol="${spread.nearOption.tradingsymbol}"
+                                data-far-symbol="${spread.farOption.tradingsymbol}">
+                            Execute
+                        </button>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            // Add event listeners to execute buttons
+            document.querySelectorAll('.execute-spread-btn').forEach(btn => {
+                btn.addEventListener('click', handleExecuteSpread);
+            });
+        }
+
+        // Update Metrics
+        function updateMetrics() {
+            if (state.calendarSpreads.length === 0) {
+                avgIvDiff.textContent = '-';
+                avgThetaRatio.textContent = '-';
+                avgDebit.textContent = '-';
+                spreadsCount.textContent = '-';
+                return;
+            }
+            
+            // Calculate averages
+            const totalIvDiff = state.calendarSpreads.reduce((sum, spread) => sum + spread.ivDiff, 0);
+            const totalThetaRatio = state.calendarSpreads.reduce((sum, spread) => sum + spread.thetaRatio, 0);
+            const totalDebit = state.calendarSpreads.reduce((sum, spread) => sum + spread.debit, 0);
+            
+            const avgIvDiffValue = totalIvDiff / state.calendarSpreads.length;
+            const avgThetaRatioValue = totalThetaRatio / state.calendarSpreads.length;
+            const avgDebitValue = totalDebit / state.calendarSpreads.length;
+            
+            // Update UI
+            avgIvDiff.textContent = avgIvDiffValue.toFixed(2) + '%';
+            avgIvDiff.className = avgIvDiffValue > 0 ? 'spread-metric-value positive-value' : 'spread-metric-value negative-value';
+            
+            avgThetaRatio.textContent = avgThetaRatioValue.toFixed(2);
+            
+            avgDebit.textContent = avgDebitValue.toFixed(2);
+            avgDebit.className = avgDebitValue > 0 ? 'spread-metric-value positive-value' : 'spread-metric-value negative-value';
+            
+            spreadsCount.textContent = state.calendarSpreads.length;
+        }
+
+        // Update Recommendations
+        function updateRecommendations() {
+            if (!recommendationsContainer) return;
+            
+            if (state.calendarSpreads.length === 0) {
+                recommendationsContainer.innerHTML = `
+                    <div class="recommendation-item">
+                        <div>
+                            <div class="recommendation-title">No recommendations available</div>
+                            <div class="recommendation-desc">Load calendar spreads to view recommendations</div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Clear container
+            recommendationsContainer.innerHTML = '';
+            
+            // Find high probability spreads
+            const highProbabilitySpreads = state.calendarSpreads.filter(spread => spread.probability === 'High');
+            
+            if (highProbabilitySpreads.length > 0) {
+                // Create recommendation items for top 3 spreads
+                highProbabilitySpreads.slice(0, 3).forEach(spread => {
+                    const item = document.createElement('div');
+                    item.className = 'recommendation-item';
+                    
+                    item.innerHTML = `
+                        <div>
+                            <div class="recommendation-title high-probability">
+                                ${spread.strike} ${optionType.value} Calendar Spread
+                            </div>
+                            <div class="recommendation-desc">
+                                Sell ${spread.nearOption.tradingsymbol} @ ${spread.nearOption.last_price?.toFixed(2) || '-'}, 
+                                Buy ${spread.farOption.tradingsymbol} @ ${spread.farOption.last_price?.toFixed(2) || '-'} <br>
+                                IV Diff: ${spread.ivDiff.toFixed(2)}%, Theta Ratio: ${spread.thetaRatio.toFixed(2)}, 
+                                Net Debit: ${spread.debit.toFixed(2)}
+                            </div>
+                        </div>
+                        <button class="button button-primary execute-spread-btn" 
+                                data-near-token="${spread.nearOption.instrument_token}"
+                                data-far-token="${spread.farOption.instrument_token}"
+                                data-near-symbol="${spread.nearOption.tradingsymbol}"
+                                data-far-symbol="${spread.farOption.tradingsymbol}">
+                            Execute
+                        </button>
+                    `;
+                    
+                    recommendationsContainer.appendChild(item);
+                });
+                
+                // Add event listeners to execute buttons
+                recommendationsContainer.querySelectorAll('.execute-spread-btn').forEach(btn => {
+                    btn.addEventListener('click', handleExecuteSpread);
+                });
+            } else {
+                // No high probability spreads
+                recommendationsContainer.innerHTML = `
+                    <div class="recommendation-item">
+                        <div>
+                            <div class="recommendation-title">No high probability spreads found</div>
+                            <div class="recommendation-desc">Try different expiry dates or wait for better market conditions</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Handle Execute Spread button click
+        function handleExecuteSpread(event) {
+            const btn = event.target;
+            const nearToken = btn.dataset.nearToken;
+            const farToken = btn.dataset.farToken;
+            const nearSymbol = btn.dataset.nearSymbol;
+            const farSymbol = btn.dataset.farSymbol;
+            
+            // Find the options
+            const nearOption = state.nearMonthOptions.find(opt => opt.instrument_token == nearToken);
+            const farOption = state.farMonthOptions.find(opt => opt.instrument_token == farToken);
+            
+            if (!nearOption || !farOption) {
+                showToast('Error: Could not find options');
+                return;
+            }
+            
+            // Get quantity
+            const qty = parseInt(quantity.value) || 75;
+            
+            // Confirm spread execution
+            if (confirm(`Execute Calendar Spread:\n\nSell ${qty} ${nearSymbol} @ ${nearOption.last_price?.toFixed(2) || 'Market'}\nBuy ${qty} ${farSymbol} @ ${farOption.last_price?.toFixed(2) || 'Market'}\n\nConfirm?`)) {
+                // Execute the spread
+                executeCalendarSpread(nearOption, farOption, qty);
+            }
+        }
+
+        // Execute Calendar Spread
+        async function executeCalendarSpread(nearOption, farOption, qty) {
+            try {
+                updateStatus(`Executing calendar spread: Sell ${nearOption.tradingsymbol}, Buy ${farOption.tradingsymbol}`);
+                
+                // Place sell order for near month option
+                const sellOrderResult = await placeOrder({
+                    tradingsymbol: nearOption.tradingsymbol,
+                    exchange: nearOption.exchange || 'NFO',
+                    transaction_type: 'SELL',
+                    quantity: qty,
+                    product: 'MIS',
+                    order_type: 'MARKET'
+                });
+                
+                if (sellOrderResult.status !== 'success') {
+                    throw new Error(`Sell order failed: ${sellOrderResult.message}`);
+                }
+                
+                updateStatus(`Sell order placed: ${sellOrderResult.order_id}`);
+                
+                // Place buy order for far month option
+                const buyOrderResult = await placeOrder({
+                    tradingsymbol: farOption.tradingsymbol,
+                    exchange: farOption.exchange || 'NFO',
+                    transaction_type: 'BUY',
+                    quantity: qty,
+                    product: 'MIS',
+                    order_type: 'MARKET'
+                });
+                
+                if (buyOrderResult.status !== 'success') {
+                    updateStatus(`Warning: Buy order failed: ${buyOrderResult.message}`);
+                    showToast(`Buy order failed: ${buyOrderResult.message}`);
+                    
+                    // Suggest to manually square off the sell order
+                    if (confirm(`Buy order failed. Would you like to square off the sell order?`)) {
+                        // Square off the sell order
+                        const squareOffResult = await placeOrder({
+                            tradingsymbol: nearOption.tradingsymbol,
+                            exchange: nearOption.exchange || 'NFO',
+                            transaction_type: 'BUY',
+                            quantity: qty,
+                            product: 'MIS',
+                            order_type: 'MARKET'
+                        });
+                        
+                        if (squareOffResult.status === 'success') {
+                            updateStatus(`Squared off sell order: ${squareOffResult.order_id}`);
+                            showToast(`Squared off sell order: ${squareOffResult.order_id}`);
+                        } else {
+                            updateStatus(`Error squaring off sell order: ${squareOffResult.message}`);
+                            showToast(`Error squaring off sell order: ${squareOffResult.message}`);
+                        }
+                    }
+                    
+                    return;
+                }
+                
+                updateStatus(`Buy order placed: ${buyOrderResult.order_id}`);
+                
+                // Show success message
+                showToast(`Calendar spread executed successfully!`);
+                
+                updateStatus(`Calendar spread executed: Sell ${nearOption.tradingsymbol} (${sellOrderResult.order_id}), Buy ${farOption.tradingsymbol} (${buyOrderResult.order_id})`);
+            } catch (error) {
+                console.error('Error executing calendar spread:', error);
+                updateStatus(`Error executing calendar spread: ${error.message}`);
+                showToast(`Error executing calendar spread: ${error.message}`);
+            }
+        }
+
+        // Place order API call
+        async function placeOrder(orderParams) {
+            try {
+                updateStatus(`Placing ${orderParams.transaction_type} order for ${orderParams.quantity} ${orderParams.tradingsymbol}...`);
+                
+                const response = await fetch('/api/orders/place/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Token ${state.sessionToken}`,
+                        'X-CSRFToken': getCsrfToken()
+                    },
+                    body: JSON.stringify(orderParams)
+                });
+                
+                const data = await response.json();
+                
+                return data;
+            } catch (error) {
+                console.error('Order placement error:', error);
+                return {
+                    status: 'error',
+                    message: error.message
+                };
+            }
+        }
+
+        // Initialize the application
+        function init() {
+            // Check for existing session token in database
+            checkSavedAuthToken();
+            
+            // Set up event listeners
+            if (indexSelect) {
+                indexSelect.addEventListener('change', () => {
+                    populateExpiryDropdowns();
+                });
+            }
+            
+            if (loadSpreadsBtn) {
+                loadSpreadsBtn.addEventListener('click', loadOptions);
+            }
+            
+            if (clearWsLogBtn) {
+                clearWsLogBtn.addEventListener('click', () => {
+                    if (wsDebugLog) wsDebugLog.innerHTML = 'Log cleared';
+                });
+            }
+            
+            // Strategy tabs
+            document.querySelectorAll('.strategy-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Remove active class from all tabs
+                    document.querySelectorAll('.strategy-tab').forEach(t => t.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
+                    tab.classList.add('active');
+                    
+                    // Update strategy view
+                    updateStrategyView(tab.dataset.strategy);
+                });
+            });
+            
+            updateStatus('Application initialized');
+        }
+
+        // Update strategy view
+        function updateStrategyView(strategy) {
+            // Update UI based on selected strategy
+            // For now, we'll just show a message for non-calendar spread strategies
+            if (strategy !== 'calendar-spread') {
+                showToast(`${strategy.replace('-', ' ')} strategy will be implemented in a future update`);
+                
+                // Switch back to calendar spread
+                document.querySelectorAll('.strategy-tab').forEach(t => t.classList.remove('active'));
+                document.querySelector('[data-strategy="calendar-spread"]').classList.add('active');
+            }
+        }
+
+        // Initialize the application when the DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

@@ -1,0 +1,850 @@
+/* Index page (main trading interface) specific styles */
+
+/* Status Bar - Clean and Professional */
+.status-bar {
+    background-color: var(--card);
+    padding: 1rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    height: 100%;
+}
+
+#status-output {
+    color: var(--muted-foreground);
+    font-size: 0.8125rem;
+    font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+}
+
+/* Profile Info - Professional Layout */
+.profile-info {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+    padding: 1rem 1.5rem;
+}
+
+.profile-info dt {
+    font-weight: 600;
+    color: var(--primary);
+    text-align: right;
+}
+
+.profile-info dd {
+    color: var(--foreground);
+}
+
+/* Search Component - Clean Design */
+.search-container {
+    position: relative !important;
+    margin-bottom: 1rem;
+    z-index: 1000 !important;
+}
+
+.search-input {
+    width: 100%;
+    padding-right: 5rem;
+    padding-left: 2.5rem;
+    font-size: 0.875rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 0.75rem center;
+    background-size: 1rem;
+    border: 1px solid var(--border);
+    transition: border-color var(--transition-fast);
+}
+
+.search-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+}
+
+.search-button {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 0 1rem;
+    height: calc(100% - 8px);
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: calc(var(--radius) - 4px);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-size: 0.875rem;
+    font-weight: 500;
+    z-index: 1;
+}
+
+.search-button:hover {
+    background: var(--primary-hover);
+}
+
+.suggestions {
+    position: absolute !important;
+    top: calc(100% + 2px) !important;
+    left: 0 !important;
+    right: 0 !important;
+    background: var(--card) !important;
+    border: 1px solid var(--primary) !important;
+    border-top: none !important;
+    border-radius: 0 0 var(--radius) var(--radius) !important;
+    box-shadow: var(--shadow-md) !important;
+    max-height: 300px !important;
+    overflow-y: auto !important;
+    z-index: 1001 !important;
+    width: 100% !important;
+    display: none;
+    margin-top: -1px;
+}
+
+/* Show suggestions when active */
+.suggestions.active {
+    display: block !important;
+}
+
+.suggestion-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--border);
+    transition: all var(--transition-fast);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.suggestion-item:hover {
+    background: var(--primary-light);
+    padding-left: 1.25rem;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+    border-radius: 0 0 var(--radius) var(--radius);
+}
+
+.suggestion-item.header,
+.suggestion-item.font-semibold {
+    background: var(--secondary);
+    color: var(--primary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.75rem;
+    padding: 0.5rem 1rem;
+    cursor: default;
+}
+
+.suggestion-item.header:hover,
+.suggestion-item.font-semibold:hover {
+    background: var(--secondary);
+    transform: none;
+    padding-left: 1rem;
+}
+
+/* Instrument details in suggestions */
+.suggestion-main {
+    font-weight: 600;
+    color: var(--foreground);
+}
+
+.suggestion-details {
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+    margin-top: 0.25rem;
+}
+
+.suggestion-meta {
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+    opacity: 0.8;
+}
+
+/* Loading state for suggestions */
+.suggestions-loading {
+    padding: 1rem;
+    text-align: center;
+    color: var(--muted-foreground);
+    font-style: italic;
+}
+
+.suggestions-loading::before {
+    content: "🔍 ";
+    margin-right: 0.5rem;
+}
+
+/* No results state */
+.suggestions-empty {
+    padding: 1rem;
+    text-align: center;
+    color: var(--muted-foreground);
+    font-style: italic;
+}
+
+.suggestions-empty::before {
+    content: "❌ ";
+    margin-right: 0.5rem;
+}
+
+/* Trading Tables - Professional Style */
+.trading-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.875rem;
+    margin-top: 1rem;
+    background: var(--card);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.trading-table th {
+    font-weight: 600;
+    color: var(--primary);
+    background: var(--secondary);
+    text-align: left;
+    padding: 0.875rem 0.75rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 2px solid var(--primary);
+}
+
+.trading-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.trading-table tbody tr {
+    transition: background-color var(--transition-fast);
+}
+
+.trading-table tbody tr:hover {
+    background-color: var(--secondary-light);
+}
+
+.trading-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.trading-table input {
+    width: 70px;
+    padding: 0.375rem 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) - 4px);
+    font-size: 0.875rem;
+    text-align: center;
+    transition: all var(--transition-fast);
+}
+
+.trading-table input:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.1);
+}
+
+/* Enhanced Order Log Table Styling */
+.trading-table .exit-btn {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    background: var(--danger);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.trading-table .exit-btn:hover {
+    background: var(--danger-hover);
+    transform: translateY(-1px);
+}
+
+/* Status Column Styling */
+.trading-table td:nth-child(8) {
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+/* Auto Order Indicator */
+.trading-table td:first-child {
+    font-weight: 500;
+}
+
+/* P&L Column Future Styling */
+.trading-table td:nth-child(6) {
+    font-weight: 600;
+}
+
+/* Order Action Buttons */
+.exit-btn {
+    background: var(--danger);
+    color: white;
+    border: none;
+}
+
+.exit-btn:hover {
+    background: var(--danger-hover);
+}
+
+.cancel-btn {
+    background: var(--warning);
+    color: white;
+    border: none;
+}
+
+.cancel-btn:hover {
+    background: var(--warning-hover);
+}
+
+.modify-btn {
+    background: var(--background);
+    color: var(--foreground);
+    border: 1px solid var(--border);
+}
+
+.modify-btn:hover {
+    background: var(--secondary);
+    border-color: var(--primary);
+}
+
+/* Modify Modal Styles - Professional */
+.modify-modal-overlay,
+.exit-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modify-modal,
+.exit-modal {
+    background: var(--card);
+    border-radius: var(--radius);
+    max-width: 450px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+}
+
+.modify-modal-header,
+.exit-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--secondary);
+}
+
+.modify-modal-header h3,
+.exit-modal-header h3 {
+    margin: 0;
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.modify-modal-body,
+.exit-modal-body {
+    padding: 1.5rem;
+}
+
+.modify-modal-footer,
+.exit-modal-footer {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border);
+    background: var(--secondary-light);
+}
+
+.modify-modal-close,
+.exit-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--muted-foreground);
+    transition: color var(--transition-fast);
+}
+
+.modify-modal-close:hover,
+.exit-modal-close:hover {
+    color: var(--danger);
+}
+
+.form-group {
+    margin: 1rem 0;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--foreground);
+}
+
+/* Order Status Enhanced Styling */
+.text-warning {
+    color: var(--warning);
+    background: var(--warning-light);
+    padding: 0.25rem 0.5rem;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.text-info {
+    color: var(--info);
+    background: var(--info-light);
+    padding: 0.25rem 0.5rem;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* Button spacing in action cells */
+.trading-table td .button + .button {
+    margin-left: 0.25rem;
+}
+
+/* Status message styling */
+.order-status-message {
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+    font-style: italic;
+    margin-top: 0.25rem;
+}
+
+/* Options Panels - Professional Design */
+.options-panel {
+    margin-bottom: 1.5rem;
+}
+
+.options-panel .controls-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    background: var(--secondary);
+    border-bottom: 2px solid var(--primary);
+    border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.options-panel .panel-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.options-panel .controls-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.options-panel .control-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.options-panel label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--foreground);
+}
+
+.options-panel .spot-input {
+    width: 120px;
+    font-size: 0.875rem;
+    height: 2.25rem;
+    text-align: right;
+    padding-right: 0.75rem;
+    font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+}
+
+.options-panel .expiry-select {
+    width: 160px;
+    font-size: 0.875rem;
+    height: 2.25rem;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    padding-right: 2rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+    cursor: pointer;
+}
+
+.options-panel .action-button,
+#nifty-load-btn,
+#banknifty-load-btn {
+    margin-left: 1rem;
+    background-color: var(--primary);
+    color: white;
+    height: 2.25rem;
+    padding: 0 1rem;
+    border-radius: calc(var(--radius) - 2px);
+    font-weight: 500;
+    font-size: 0.875rem;
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.options-panel .action-button:hover,
+#nifty-load-btn:hover,
+#banknifty-load-btn:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+/* Option Tables - Clean Design */
+.nifty-options-table,
+.banknifty-options-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.875rem;
+    background: var(--card);
+}
+
+.nifty-options-table thead tr:first-child th,
+.banknifty-options-table thead tr:first-child th {
+    padding: 0.75rem;
+    text-align: center;
+    font-weight: 600;
+    border-bottom: none;
+}
+
+/* Call options header */
+.nifty-options-table thead tr:first-child th:nth-child(1),
+.banknifty-options-table thead tr:first-child th:nth-child(1) {
+    background: var(--call-bg);
+    color: var(--call-color);
+    border-top-left-radius: var(--radius);
+}
+
+/* Strike price header */
+.nifty-options-table thead tr:first-child th:nth-child(2),
+.banknifty-options-table thead tr:first-child th:nth-child(2) {
+    background: var(--primary);
+    color: white;
+    font-weight: 700;
+}
+
+/* Put options header */
+.nifty-options-table thead tr:first-child th:nth-child(3),
+.banknifty-options-table thead tr:first-child th:nth-child(3) {
+    background: var(--put-bg);
+    color: var(--put-color);
+    border-top-right-radius: var(--radius);
+}
+
+.nifty-options-table thead tr:last-child th,
+.banknifty-options-table thead tr:last-child th {
+    padding: 0.625rem 0.75rem;
+    text-align: center;
+    background-color: var(--secondary);
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.nifty-options-table thead tr:last-child th:nth-child(6),
+.banknifty-options-table thead tr:last-child th:nth-child(6) {
+    background-color: var(--primary);
+    color: white;
+    font-weight: 700;
+}
+
+.nifty-options-table tbody td,
+.banknifty-options-table tbody td {
+    padding: 0.625rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+}
+
+.nifty-options-table .symbol-cell,
+.banknifty-options-table .symbol-cell {
+    font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-align: left;
+    padding-left: 1rem;
+}
+
+.nifty-options-table .price-cell,
+.banknifty-options-table .price-cell {
+    font-weight: 600;
+    font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+    text-align: right;
+    padding-right: 1rem;
+}
+
+.nifty-options-table .strike-cell,
+.banknifty-options-table .strike-cell {
+    background-color: var(--primary) !important;
+    color: white !important;
+    font-weight: 700;
+    font-size: 1rem;
+    text-align: center;
+}
+
+.nifty-options-table tr:hover,
+.banknifty-options-table tr:hover {
+    background-color: var(--secondary-light);
+}
+
+.nifty-options-table tr:nth-child(even),
+.banknifty-options-table tr:nth-child(even) {
+    background-color: rgba(249, 250, 251, 0.5);
+}
+
+.nifty-options-table .quantity-input,
+.banknifty-options-table .quantity-input {
+    width: 60px;
+    padding: 0.3125rem 0.375rem;
+    text-align: center;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) - 4px);
+    font-size: 0.875rem;
+    font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+}
+
+.nifty-options-table .quantity-input:focus,
+.banknifty-options-table .quantity-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.1);
+}
+
+/* Button Styles in Tables */
+.nifty-options-table .buy-button,
+.banknifty-options-table .buy-button,
+.buy-button {
+    background-color: var(--success);
+    color: white;
+    border: none;
+    border-radius: calc(var(--radius) - 4px);
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    min-width: 4rem;
+}
+
+.nifty-options-table .sell-button,
+.banknifty-options-table .sell-button,
+.sell-button {
+    background-color: var(--danger);
+    color: white;
+    border: none;
+    border-radius: calc(var(--radius) - 4px);
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    min-width: 4rem;
+}
+
+.nifty-options-table .buy-button:hover,
+.banknifty-options-table .buy-button:hover,
+.buy-button:hover {
+    background-color: var(--success-hover);
+    transform: translateY(-1px);
+}
+
+.nifty-options-table .sell-button:hover,
+.banknifty-options-table .sell-button:hover,
+.sell-button:hover {
+    background-color: var(--danger-hover);
+    transform: translateY(-1px);
+}
+
+/* Order management */
+.order-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+tr.editing .exit-diff,
+tr.editing .exit-price-cell,
+tr.editing .order-quantity {
+    background-color: var(--info-light);
+    padding: 0;
+}
+
+tr.editing input {
+    width: 100%;
+    padding: 0.25rem;
+    border: 1px solid var(--primary);
+    border-radius: calc(var(--radius) - 4px);
+}
+
+.order-status {
+    font-size: 0.875rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    background-color: var(--secondary);
+    color: var(--foreground);
+    display: inline-block;
+    margin-top: 0.25rem;
+}
+
+.order-status:empty {
+    display: none;
+}
+
+/* Modern Status Pills */
+.status-pill {
+    padding: 0.25rem 0.75rem;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.status-complete {
+    background: var(--success-light);
+    color: var(--success);
+}
+
+.status-pending {
+    background: var(--warning-light);
+    color: var(--warning);
+}
+
+.status-rejected {
+    background: var(--danger-light);
+    color: var(--danger);
+}
+
+/* WebSocket Debug Panel - Professional */
+#ws-debug-log {
+    font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+    font-size: 0.75rem;
+    background: var(--secondary-light);
+    padding: 1rem;
+    border-radius: calc(var(--radius) - 2px);
+    border: 1px solid var(--border);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .trading-table {
+        font-size: 0.8125rem;
+    }
+    
+    .trading-table th,
+    .trading-table td {
+        padding: 0.5rem 0.375rem;
+    }
+}
+
+@media (max-width: 1024px) {
+    .options-panel .controls-row {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .options-panel .controls-group {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 768px) {
+    .options-panel .controls-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    .options-panel .controls-group {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+        width: 100%;
+    }
+    
+    .options-panel .control-item {
+        width: 100%;
+    }
+    
+    .options-panel .spot-input,
+    .options-panel .expiry-select {
+        width: 100%;
+    }
+    
+    .options-panel .action-button,
+    #nifty-load-btn,
+    #banknifty-load-btn {
+        margin-left: 0;
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+    
+    .trading-table {
+        font-size: 0.75rem;
+    }
+    
+    .trading-table th,
+    .trading-table td {
+        padding: 0.5rem 0.375rem;
+    }
+    
+    .button {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.75rem;
+    }
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.welcome-text {
+    color: var(--muted-foreground);
+    font-weight: 500;
+}
+

@@ -1,0 +1,6 @@
+ 
+wsl -d Ubuntu (gss/maggi456)
+
+sudo service redis-server start
+
+redis-cli ping

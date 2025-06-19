@@ -1,0 +1,394 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Plans - TradeEase</title>
+    <link rel="stylesheet" href="{% static 'zerodhatrader/css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'zerodhatrader/css/subscription.css' %}">
+    <link rel="icon" type="image/x-icon" href="{% static 'zerodhatrader/img/favicon.ico' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Keep Bootstrap for navbar if needed -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="unified-page">
+
+    <!-- Subscription Page Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'landing' %}">
+                <i class="fas fa-chart-line"></i>
+                TradeEase
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="navbar-nav ms-auto align-items-center">
+                    {% if user.is_authenticated %}
+                        <a class="nav-link" href="{% url 'index' %}">
+                            <i class="fas fa-chart-bar"></i> Dashboard
+                        </a>
+                        <a class="nav-link" href="{% url 'profile' %}">
+                            <i class="fas fa-user"></i> Profile
+                        </a>
+                        <a class="nav-link" href="{% url 'signout' %}">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    {% else %}
+                        <a class="nav-link" href="{% url 'landing' %}">
+                            <i class="fas fa-home"></i> Home
+                        </a>
+                        <a class="nav-link" href="{% url 'signin' %}">Login</a>
+                        <a class="btn btn-secondary-custom btn-sm px-4 rounded-pill ms-2" href="{% url 'signup' %}">
+                            Get Started
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="subscription-wrapper">
+        <div class="container">
+            
+            <!-- Hero Section -->
+            <div class="subscription-hero">
+                <div class="hero-content">
+                    <div class="brand-header">
+                        <div class="brand-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h1 class="brand-title">TradeEase</h1>
+                    </div>
+                    <h2 class="hero-title">Choose Your Trading Journey</h2>
+                    <p class="hero-subtitle">Professional trading tools with transparent pricing. Start with a 15-day free trial.</p>
+                    <div class="hero-features">
+                        <div class="hero-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>No setup fees</span>
+                        </div>
+                        <div class="hero-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Cancel anytime</span>
+                        </div>
+                        <div class="hero-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>24/7 support</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Current Status Alert -->
+            {% if user_subscription %}
+            <div class="current-status-section">
+                <div class="status-alert">
+                    <div class="status-icon">
+                        <i class="fas fa-{% if user_subscription.status == 'ACTIVE' %}crown{% elif user_subscription.status == 'TRIAL' %}clock{% else %}exclamation-triangle{% endif %}"></i>
+                    </div>
+                    <div class="status-content">
+                        <div class="status-header">
+                            <h3>Your Current Plan</h3>
+                            <span class="status-badge status-{{ user_subscription.status|lower }}">
+                                {{ user_subscription.get_status_display }}
+                            </span>
+                        </div>
+                        <div class="status-details">
+                            {% if user_subscription.is_active %}
+                                {% if user_subscription.status == 'TRIAL' %}
+                                    <p class="status-message">
+                                        <i class="fas fa-gift"></i>
+                                        Free trial ends in <strong>{{ user_subscription.days_remaining }} days</strong> on {{ user_subscription.trial_end_date|date:"F d, Y" }}
+                                    </p>
+                                {% else %}
+                                    <p class="status-message">
+                                        <i class="fas fa-calendar-check"></i>
+                                        Your subscription expires on {{ user_subscription.subscription_end_date|date:"F d, Y" }}
+                                        (<strong>{{ user_subscription.days_remaining }} days remaining</strong>)
+                                    </p>
+                                {% endif %}
+                            {% else %}
+                                <p class="status-message expired">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    Your subscription has expired. Upgrade now to continue trading.
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Pricing Section -->
+            <div class="pricing-section">
+                <div class="section-header">
+                    <h2>Simple, Transparent Pricing</h2>
+                    <p>Choose the plan that fits your trading style. All plans include our complete feature set.</p>
+                </div>
+
+                <div class="pricing-grid">
+                    {% for plan in plans %}
+                    <div class="pricing-card {% if plan.plan_type == 'QUARTERLY' %}featured{% endif %} {% if user_subscription and user_subscription.plan and user_subscription.plan.id == plan.id and user_subscription.is_active %}current{% endif %}">
+                        
+                        <!-- Badges -->
+                        <div class="card-badges">
+                            {% if plan.discount_percentage > 0 %}
+                                <div class="discount-badge">
+                                    <i class="fas fa-tag"></i>
+                                    Save ₹{{ plan.discount_amount|floatformat:0 }}
+                                </div>
+                            {% endif %}
+                            {% if plan.plan_type == 'QUARTERLY' %}
+                                <div class="popular-badge">
+                                    <i class="fas fa-star"></i>
+                                    Most Popular
+                                </div>
+                            {% endif %}
+                            {% if user_subscription and user_subscription.plan and user_subscription.plan.id == plan.id and user_subscription.is_active %}
+                                <div class="current-badge">
+                                    <i class="fas fa-check"></i>
+                                    Current Plan
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Plan Header -->
+                        <div class="plan-header">
+                            <div class="plan-icon">
+                                <i class="{{ plan.icon_class }}"></i>
+                            </div>
+                            <h3 class="plan-name">{{ plan.name }}</h3>
+                            <p class="plan-description">{{ plan.description }}</p>
+                        </div>
+
+                        <!-- Pricing -->
+                        <div class="plan-pricing">
+                            <div class="price-main">
+                                <span class="currency">₹</span>
+                                <span class="amount">{{ plan.price|floatformat:0 }}</span>
+                            </div>
+                            <div class="price-period">{{ plan.get_plan_type_display }}</div>
+                            {% if plan.plan_type != 'MONTHLY' %}
+                            <div class="price-breakdown">
+                                ₹{{ plan.monthly_price|floatformat:0 }}/month
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Features -->
+                        <div class="plan-features">
+                            <ul class="features-list">
+                                <li class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Real-time market data</span>
+                                </li>
+                                <li class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Advanced trading tools</span>
+                                </li>
+                                <li class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Options chain analysis</span>
+                                </li>
+                                <li class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Portfolio tracking</span>
+                                </li>
+                                <li class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Risk management tools</span>
+                                </li>
+                                {% if plan.plan_type == 'QUARTERLY' or plan.plan_type == 'YEARLY' %}
+                                <li class="feature-item premium">
+                                    <i class="fas fa-star"></i>
+                                    <span>Priority support</span>
+                                </li>
+                                {% endif %}
+                                {% if plan.plan_type == 'YEARLY' %}
+                                <li class="feature-item premium">
+                                    <i class="fas fa-star"></i>
+                                    <span>Advanced analytics</span>
+                                </li>
+                                <li class="feature-item premium">
+                                    <i class="fas fa-star"></i>
+                                    <span>Custom indicators</span>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+
+                        <!-- Action Button -->
+                        <div class="plan-action">
+                            {% if user.is_authenticated %}
+                                {% if user_subscription and user_subscription.is_active and user_subscription.plan and user_subscription.plan.id == plan.id %}
+                                    <button class="btn-current" disabled>
+                                        <i class="fas fa-check"></i>
+                                        Current Plan
+                                    </button>
+                                {% else %}
+                                    <a href="{% url 'checkout' plan.id %}" class="btn-select">
+                                        <i class="fas fa-arrow-right"></i>
+                                        {% if user_subscription and user_subscription.status == 'TRIAL' %}Upgrade Now{% else %}Select Plan{% endif %}
+                                    </a>
+                                {% endif %}
+                            {% else %}
+                                <a href="{% url 'signin' %}?next={% url 'subscription_plans' %}" class="btn-select">
+                                    <i class="fas fa-sign-in-alt"></i>
+                                    Sign In to Subscribe
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Feature Comparison Table -->
+            <div class="comparison-section">
+                <div class="section-header">
+                    <h2>Everything You Need to Trade Successfully</h2>
+                    <p>All plans include our complete suite of professional trading tools</p>
+                </div>
+
+                <div class="features-showcase">
+                    <div class="feature-category">
+                        <h3>
+                            <i class="fas fa-chart-line"></i>
+                            Trading & Analysis
+                        </h3>
+                        <div class="features-grid">
+                            <div class="feature-showcase-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-bolt"></i>
+                                </div>
+                                <div class="feature-content">
+                                    <h4>Real-time Data</h4>
+                                    <p>Live market data with minimal latency for accurate trading decisions</p>
+                                </div>
+                            </div>
+                            <div class="feature-showcase-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-chart-bar"></i>
+                                </div>
+                                <div class="feature-content">
+                                    <h4>Advanced Charts</h4>
+                                    <p>Professional charting tools with technical indicators and drawing tools</p>
+                                </div>
+                            </div>
+                            <div class="feature-showcase-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-layer-group"></i>
+                                </div>
+                                <div class="feature-content">
+                                    <h4>Options Analysis</h4>
+                                    <p>Comprehensive options chain with Greeks, strategy builder, and risk analysis</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="feature-category">
+                        <h3>
+                            <i class="fas fa-shield-alt"></i>
+                            Security & Support
+                        </h3>
+                        <div class="features-grid">
+                            <div class="feature-showcase-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-lock"></i>
+                                </div>
+                                <div class="feature-content">
+                                    <h4>Bank-level Security</h4>
+                                    <p>AES-256 encryption and secure API integration with Zerodha</p>
+                                </div>
+                            </div>
+                            <div class="feature-showcase-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-headset"></i>
+                                </div>
+                                <div class="feature-content">
+                                    <h4>24/7 Support</h4>
+                                    <p>Round-the-clock customer support via chat, email, and phone</p>
+                                </div>
+                            </div>
+                            <div class="feature-showcase-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-mobile-alt"></i>
+                                </div>
+                                <div class="feature-content">
+                                    <h4>Multi-device Access</h4>
+                                    <p>Trade seamlessly across desktop, tablet, and mobile devices</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trust Indicators -->
+            <div class="trust-section">
+                <div class="trust-content">
+                    <h3>Trusted by Professional Traders</h3>
+                    <div class="trust-stats">
+                        <div class="trust-stat">
+                            <div class="stat-number">10,000+</div>
+                            <div class="stat-label">Active Traders</div>
+                        </div>
+                        <div class="trust-stat">
+                            <div class="stat-number">₹50Cr+</div>
+                            <div class="stat-label">Daily Volume</div>
+                        </div>
+                        <div class="trust-stat">
+                            <div class="stat-number">99.9%</div>
+                            <div class="stat-label">Uptime</div>
+                        </div>
+                        <div class="trust-stat">
+                            <div class="stat-number">4.8★</div>
+                            <div class="stat-label">User Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ Section -->
+            <div class="faq-section">
+                <div class="section-header">
+                    <h2>Frequently Asked Questions</h2>
+                </div>
+                <div class="faq-grid">
+                    <div class="faq-item">
+                        <h4>Can I change plans anytime?</h4>
+                        <p>Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h4>What's included in the free trial?</h4>
+                        <p>15-day free trial with full access to all features. No credit card required to start.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h4>Do I need a Zerodha account?</h4>
+                        <p>Yes, you need an active Zerodha trading account and Kite Connect API subscription.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h4>Is my data secure?</h4>
+                        <p>Absolutely. We use bank-level encryption and never store your trading passwords.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Back to Dashboard -->
+            {% if user.is_authenticated %}
+            <div class="back-navigation">
+                <a href="{% url 'index' %}" class="back-link">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Trading Dashboard
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,303 @@
+<!-- zerodhatrader/templates/zerodhatrader/index.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradeEase - Trading Platform</title>    
+    <!-- Load CSS files -->
+    <link rel="stylesheet" href="{% static 'zerodhatrader/css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'zerodhatrader/css/index.css' %}">
+</head>
+<body>
+    <div class="container">
+        {% csrf_token %}
+        <!-- Header with title and logo -->
+        <header class="header">
+            <h1>TradeEase</h1>
+            <div class="header-controls">
+                <span class="welcome-text">Welcome, {{ user.first_name|default:user.username }}!</span>
+                <div class="connection-status">
+                    <span id="connection-badge" class="text-sm text-danger">Disconnected</span>
+                </div>
+                <a href="{% url 'profile' %}" class="button button-outline">Profile</a>
+                <a href="{% url 'signout' %}" class="button button-outline">Sign Out</a>
+            </div>
+        </header>
+
+        <!-- Control buttons and status row -->
+        <div class="row">
+            <!-- Control buttons -->
+            <div class="col" style="flex: 2;">
+                <div class="card">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="card-title">Trading Controls</h2>
+                    </div>
+                    <div class="flex flex-wrap">
+                        <button id="login-btn" class="button button-primary mb-2">Login</button>
+                        <button id="profile-btn" class="button button-primary mb-2">Get Profile</button>
+                        <button id="download-btn" class="button button-primary mb-2">Download Instruments</button>
+                        <button id="debug-btn" class="button button-outline mb-2">Debug Instruments</button>
+                        <button id="connect-ws-btn" class="button button-success mb-2">Connect WebSocket</button>
+                        <button id="disconnect-ws-btn" class="button button-danger mb-2">Disconnect WebSocket</button>
+                        <button id="option-chain-btn" class="button button-primary mb-2">Option Chain Analysis</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Status field -->
+            <div class="col" style="flex: 3;">
+                <div class="status-bar">
+                    <h2 class="card-title">Status</h2>
+                    <pre id="status-output" style="overflow-y: auto; max-height: 80px; font-family: monospace; font-size: 12px;">Ready</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced WebSocket Debug Panel -->
+        <div class="card" style="margin-top: 1rem;">
+            <h2 class="card-title">WebSocket Debug</h2>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <button id="clear-ws-log" class="button button-outline" style="font-size: 0.75rem;">Clear Log</button>
+                <label>
+                    <input type="checkbox" id="auto-scroll" checked>
+                    Auto-scroll
+                </label>
+            </div>
+            <div id="ws-debug-log" style="max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 12px; background: #f5f5f5; padding: 0.5rem; border-radius: 0.25rem; white-space: pre-wrap; word-break: break-word;">WebSocket debug log will appear here</div>
+        </div>
+
+        
+
+        <!-- Profile info row -->
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <h2 class="card-title">Profile Information</h2>
+                    <dl class="profile-info">
+                        <dt>User ID</dt>
+                        <dd id="profile-user-id">-</dd>
+                        <dt>User Name</dt>
+                        <dd id="profile-user-name">-</dd>
+                        <dt>Email</dt>
+                        <dd id="profile-email">-</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instrument search row -->
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <h2 class="card-title">Instrument Search</h2>
+                    <div class="search-container">
+                        <input type="text" id="instrument-search" class="input search-input" placeholder="Search instruments...">
+                        <button id="add-instrument-btn" class="search-button">Add</button>
+                        <div id="search-suggestions" class="suggestions"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trading instruments table -->
+        <div class="card">
+            <h2 class="card-title">Trading Instruments</h2>
+            <table class="trading-table">
+                <thead>
+                    <tr>
+                        <th>Instrument</th>
+                        <th>Last Price</th>
+                        <th>Quantity</th>
+                        <th>Diff</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="trading-table-body">
+                    <tr>
+                        <td colspan="5" class="text-center text-gray-500">No instruments added yet</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Nifty Options Panel -->
+        <div class="row">
+            <div class="col">
+                <div class="card options-panel">
+                    <div class="controls-row">
+                        <h2 class="panel-title">Nifty Options</h2>
+                        <div class="controls-group">
+                            <div class="control-item">
+                                <label for="nifty-spot">Spot Price:</label>
+                                <input type="number" id="nifty-spot" class="input spot-input" placeholder="Spot Price">
+                            </div>
+                            <div class="control-item">
+                                <label for="nifty-expiry">Expiry Date:</label>
+                                <select id="nifty-expiry" class="input expiry-select">
+                                    <option value="">Select Expiry</option>
+                                </select>
+                            </div>
+                            <div class="control-item">
+                                <label for="nifty-quantity">Quantity:</label>
+                                <input type="number" id="nifty-quantity" class="input" value="75" min="75" step="75">
+                            </div>
+                            <div class="control-item">
+                                <label for="nifty-diff">Diff:</label>
+                                <input type="number" id="nifty-diff" class="input" value="1.5" min="0" step="0.5">
+                            </div>
+                            <button id="nifty-load-btn" class="button button-primary">Load Options</button>
+                        </div>
+                    </div>
+                    <table class="nifty-options-table">
+                        <thead>
+                            <tr>
+                                <th colspan="5" class="text-center">Call Options</th>
+                                <th class="strike-cell">Strike</th>
+                                <th colspan="5" class="text-center">Put Options</th>
+                            </tr>
+                            <tr>
+                                <th>Symbol</th>
+                                <th class="text-right">LTP</th>
+                                <th class="text-right">Margin</th>
+                                <th>Buy</th>
+                                <th>Sell</th>
+                                <th class="strike-cell">Price</th>
+                                <th>Buy</th>
+                                <th>Sell</th>
+                                <th class="text-right">Margin</th>
+                                <th class="text-right">LTP</th>
+                                <th>Symbol</th>
+                            </tr>
+                        </thead>
+                        <tbody id="nifty-options-body">
+                            <tr>
+                                <td colspan="11" class="text-center">Select expiry date and spot price to load options</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bank Nifty Options Panel -->
+        <div class="row">
+            <div class="col">
+                <div class="card options-panel">
+                    <div class="controls-row">
+                        <h2 class="panel-title">Bank Nifty Options</h2>
+                        <div class="controls-group">
+                            <div class="control-item">
+                                <label for="banknifty-spot">Spot Price:</label>
+                                <input type="number" id="banknifty-spot" class="input spot-input" placeholder="Spot Price">
+                            </div>
+                            <div class="control-item">
+                                <label for="banknifty-expiry">Expiry Date:</label>
+                                <select id="banknifty-expiry" class="input expiry-select">
+                                    <option value="">Select Expiry</option>
+                                </select>
+                            </div>
+                            <div class="control-item">
+                                <label for="banknifty-quantity">Quantity:</label>
+                                <input type="number" id="banknifty-quantity" class="input" value="30" min="30" step="30">
+                            </div>
+                            <div class="control-item">
+                                <label for="banknifty-diff">Diff:</label>
+                                <input type="number" id="banknifty-diff" class="input" value="1.5" min="0" step="0.5">
+                            </div>
+                            <button id="banknifty-load-btn" class="button button-primary">Load Options</button>
+                        </div>
+                    </div>
+                    <table class="banknifty-options-table">
+                        <thead>
+                            <tr>
+                                <th colspan="5" class="text-center">Call Options</th>
+                                <th class="strike-cell">Strike</th>
+                                <th colspan="5" class="text-center">Put Options</th>
+                            </tr>
+                            <tr>
+                                <th>Symbol</th>
+                                <th class="text-right">LTP</th>
+                                <th class="text-right">Margin</th>
+                                <th>Buy</th>
+                                <th>Sell</th>
+                                <th class="strike-cell">Price</th>
+                                <th>Buy</th>
+                                <th>Sell</th>
+                                <th class="text-right">Margin</th>
+                                <th class="text-right">LTP</th>
+                                <th>Symbol</th>
+                            </tr>
+                        </thead>
+                        <tbody id="banknifty-options-body">
+                            <tr>
+                                <td colspan="11" class="text-center">Select expiry date and spot price to load options</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Position Panel -->
+        <div class="card" style="margin-top: 1rem;">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="card-title">Positions Tracker</h2>
+                <div class="controls-group">
+                    <button id="refresh-positions-btn" class="button button-outline" style="font-size: 0.75rem;">Refresh</button>
+                    <button id="reset-all-positions-btn" class="button button-danger" style="font-size: 0.75rem;">Reset All</button>
+                </div>
+            </div>
+            <table class="trading-table">
+                <thead>
+                    <tr>
+                        <th>Instrument</th>
+                        <th class="text-right">Net Qty</th>
+                        <th class="text-right">Avg Price</th>
+                        <th class="text-right">Current Price</th>
+                        <th class="text-right">Gross P&L</th>
+                        <th class="text-right">Net P&L</th> <!-- Reserved for future brokerage calculations -->
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="positions-table-body">
+                    <tr>
+                        <td colspan="7" class="text-center text-gray-500">No positions yet</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Replace the existing Order Log table header section -->
+        <div class="card">
+            <h2 class="card-title">Order Log</h2>
+            <table class="trading-table">
+                <thead>
+                    <tr>
+                        <th>Order</th>              <!-- Column 1: Symbol + Type -->
+                        <th class="text-right">Buy Price</th>    <!-- Column 2: Buy price -->
+                        <th>Buy Order ID</th>       <!-- Column 3: Buy order ID -->
+                        <th class="text-right">Sell Price</th>   <!-- Column 4: Sell price -->
+                        <th>Sell Order ID</th>      <!-- Column 5: Sell order ID -->
+                        <th class="text-right">P&L</th>          <!-- Column 6: P&L -->
+                        <th class="text-center">Actions</th>     <!-- Column 7: Action buttons -->
+                        <th class="text-center">Status</th>      <!-- Column 8: Order status -->
+                        <th class="text-right">Quantity</th>     <!-- Column 9: Quantity -->
+                    </tr>
+                </thead>
+                <tbody id="order-log-body">
+                    <tr>
+                        <td colspan="9" class="text-center">No orders yet</td> <!-- Updated colspan -->
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>   
+    
+    <!-- Load JavaScript files -->
+    <script src="{% static 'zerodhatrader/js/base.js' %}"></script>
+    <script src="{% static 'zerodhatrader/js/websocket.js' %}"></script>
+    <script src="{% static 'zerodhatrader/js/index.js' %}"></script>
+</body>
+</html>

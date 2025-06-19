@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zerodha Authentication</title>
+    <!-- Load CSS files -->
+    <link rel="stylesheet" href="{% static 'zerodhatrader/css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'zerodhatrader/css/login.css' %}">
+</head>
+<body>
+    <div class="container" id="container">
+        <h1>Zerodha Authentication</h1>
+        <div id="loading">
+            <p>Redirecting to Zerodha's login page...</p>
+            <div class="loader"></div>
+        </div>
+        <div id="success" style="display: none;">
+            <p style="color: #4CAF50; font-weight: bold;">Authentication successful! This window will close automatically.</p>
+        </div>
+    </div>
+    
+    <script>
+        // Check if we're on a callback URL with a request token
+        const urlParams = new URLSearchParams(window.location.search);
+        const requestToken = urlParams.get('request_token');
+
+        if (requestToken) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('success').style.display = 'block';
+            
+            if (window.opener) {
+                try {
+                    if (typeof window.opener.processRequestToken === 'function') {
+                        window.opener.processRequestToken(requestToken);
+                    }
+                } catch (e) {
+                    console.error("Error sending token:", e);
+                }
+            }
+            
+            setTimeout(function() {
+                window.close();
+            }, 2000);
+        }
+    </script>
+   
+</body>
+</html>

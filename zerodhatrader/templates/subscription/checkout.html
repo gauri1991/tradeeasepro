@@ -1,0 +1,156 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - TradeEase</title>
+    <link rel="stylesheet" href="{% static 'zerodhatrader/css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'zerodhatrader/css/subscription.css' %}">
+    <link rel="icon" type="image/x-icon" href="{% static 'zerodhatrader/img/favicon.ico' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% if not development_mode %}
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    {% endif %}
+</head>
+<body class="unified-page">
+    <!-- Your existing navbar here -->
+    
+    <div class="checkout-container">
+        <div class="checkout-header">
+            <h1 class="brand-logo">
+                <i class="fas fa-chart-line me-3"></i>TradeEase
+            </h1>
+            <div class="secure-badge">
+                <i class="fas fa-lock"></i> 
+                {% if development_mode %}Development Mode{% else %}Secure Checkout{% endif %}
+            </div>
+        </div>
+
+        {% if development_mode %}
+        <!-- Development Mode Notice -->
+        <div class="dev-notice">
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Development Mode:</strong> This is a test environment. No real payment will be processed.
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="checkout-content">
+            <!-- Your existing order summary and user info sections -->
+            
+            <!-- Action Buttons -->
+            <div class="checkout-actions">
+                {% if development_mode %}
+                    <button id="dev-pay-button" class="btn-pay">
+                        <i class="fas fa-code"></i> Simulate Payment (Dev Mode)
+                    </button>
+                {% else %}
+                    <button id="pay-button" class="btn-pay">
+                        <i class="fas fa-lock"></i> Pay ₹{{ plan.price|floatformat:2 }}
+                    </button>
+                {% endif %}
+                <a href="{% url 'subscription_plans' %}" class="btn-cancel">
+                    <i class="fas fa-arrow-left"></i> Back to Plans
+                </a>
+            </div>
+
+            <!-- Security Notice -->
+            <div class="security-notice">
+                <i class="fas fa-shield-alt"></i>
+                <p>
+                    {% if development_mode %}
+                        Development environment - No real transactions will occur.
+                    {% else %}
+                        Your payment information is secure and encrypted. We never store your card details.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        {% if development_mode %}
+        // Development mode - simulate payment
+        document.getElementById('dev-pay-button').onclick = function(e) {
+            e.preventDefault();
+            
+            // Simulate payment success
+            fetch('/payment-success/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    razorpay_payment_id: 'dev_payment_' + Date.now(),
+                    razorpay_order_id: '{{ razorpay_order_id }}',
+                    razorpay_signature: 'dev_signature_' + Date.now(),
+                    development_mode: true
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    window.location.href = data.redirect_url;
+                } else {
+                    alert('Payment simulation failed. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Payment simulation failed. Please check console for details.');
+            });
+        }
+        {% else %}
+        // Production mode - use Razorpay
+        document.getElementById('pay-button').onclick = function(e) {
+            e.preventDefault();
+            
+            var options = {
+                "key": "{{ razorpay_key_id }}",
+                "amount": "{{ amount }}",
+                "currency": "INR",
+                "name": "TradeEase",
+                "description": "{{ plan.name }} Subscription",
+                "order_id": "{{ razorpay_order_id }}",
+                "handler": function (response){
+                    // Handle successful payment
+                    fetch('/payment-success/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_signature: response.razorpay_signature
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            window.location.href = data.redirect_url;
+                        } else {
+                            alert('Payment verification failed. Please contact support.');
+                        }
+                    });
+                },
+                "prefill": {
+                    "name": "{{ user.get_full_name|default:user.username }}",
+                    "email": "{{ user.email }}"
+                },
+                "theme": {
+                    "color": "#1e3a8a"
+                }
+            };
+            
+            var rzp = new Razorpay(options);
+            rzp.open();
+        }
+        {% endif %}
+    </script>
+</body>
+</html>

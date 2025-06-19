@@ -1,0 +1,501 @@
+/* Option Chain Analysis specific styles */
+
+/* Enhanced Strategy Selector */
+.strategy-selector {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    background: var(--card);
+    padding: 1rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+}
+
+.strategy-tab {
+    padding: 0.75rem 1.25rem;
+    background: linear-gradient(135deg, var(--secondary), #f1f5f9);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+    position: relative;
+}
+
+.strategy-tab:hover {
+    background: linear-gradient(135deg, #e2e8f0, #f1f5f9);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.strategy-tab.active {
+    background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+    color: white;
+    border-color: var(--primary-hover);
+    box-shadow: var(--shadow-md);
+}
+
+.strategy-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 6px solid var(--card);
+}
+
+/* Option Chain Controls */
+.option-chain-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    align-items: center;
+}
+
+.control-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.control-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+/* Strategy Panels */
+.strategy-control-panel, .strategy-result-panel {
+    display: none;
+}
+
+/* Enhanced Tables */
+.calendar-spread-table, .vertical-spread-table, .iron-condor-table, .butterfly-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.875rem;
+    box-shadow: var(--shadow-md);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.calendar-spread-table th,
+.calendar-spread-table td,
+.vertical-spread-table th,
+.vertical-spread-table td,
+.iron-condor-table th,
+.iron-condor-table td,
+.butterfly-table th,
+.butterfly-table td {
+    padding: 1rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+    position: relative;
+}
+
+/* Enhanced Table Headers */
+.calendar-spread-table th,
+.vertical-spread-table th,
+.iron-condor-table th,
+.butterfly-table th {
+    font-weight: 600;
+    color: white;
+    background: linear-gradient(135deg, #1b5e20, #2e7d32);
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 2px solid var(--primary);
+}
+
+.calendar-spread-table th:first-child,
+.vertical-spread-table th:first-child,
+.iron-condor-table th:first-child,
+.butterfly-table th:first-child {
+    border-top-left-radius: var(--radius);
+}
+
+.calendar-spread-table th:last-child,
+.vertical-spread-table th:last-child,
+.iron-condor-table th:last-child,
+.butterfly-table th:last-child {
+    border-top-right-radius: var(--radius);
+}
+
+/* Enhanced Row Highlighting */
+.highlighted-row {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(76, 175, 80, 0.05));
+    border-left: 3px solid var(--primary);
+}
+
+.calendar-spread-table tbody tr:hover,
+.vertical-spread-table tbody tr:hover,
+.iron-condor-table tbody tr:hover,
+.butterfly-table tbody tr:hover {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.05), rgba(76, 175, 80, 0.02));
+    transform: scale(1.01);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+}
+
+/* Enhanced Metric Cards */
+.spread-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.spread-metric-card {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, var(--card) 0%, #fdfdfd 100%);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.spread-metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--info));
+}
+
+.spread-metric-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.spread-metric-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, var(--primary), var(--info));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.spread-metric-title {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Value styling */
+.positive-value {
+    color: var(--success);
+}
+
+.negative-value {
+    color: var(--danger);
+}
+
+/* Tab navigation for near/far month selection */
+.month-tabs {
+    display: flex;
+    margin-bottom: 1rem;
+}
+
+.month-tab {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border-top: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+.month-tab:first-child {
+    border-left: 1px solid var(--border);
+    border-top-left-radius: var(--radius);
+    border-bottom-left-radius: var(--radius);
+}
+
+.month-tab:last-child {
+    border-top-right-radius: var(--radius);
+    border-bottom-right-radius: var(--radius);
+}
+
+.month-tab.active {
+    background-color: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+/* Side-by-side view for calendar spreads */
+.options-container {
+    display: flex;
+    gap: 1rem;
+}
+
+.options-column {
+    flex: 1;
+}
+
+/* Calendar spread recommendations */
+.recommendations {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background-color: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+}
+
+.recommendation-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.recommendation-item:last-child {
+    border-bottom: none;
+}
+
+.recommendation-title {
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.recommendation-desc {
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.high-probability {
+    color: var(--success);
+}
+
+.medium-probability {
+    color: var(--warning);
+}
+
+.low-probability {
+    color: var(--danger);
+}
+
+/* Heatmap Classes */
+.heat-cell {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.heat-cold { background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05)); }
+.heat-cool { background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(6, 182, 212, 0.05)); }
+.heat-neutral { background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05)); }
+.heat-warm { background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05)); }
+.heat-hot { background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05)); }
+
+/* Greeks Display */
+.greeks-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(76, 175, 80, 0.05);
+    border-radius: calc(var(--radius) - 2px);
+}
+
+.greek-item {
+    text-align: center;
+    font-size: 0.75rem;
+}
+
+.greek-label {
+    color: var(--muted-foreground);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.greek-value {
+    font-weight: 600;
+    color: var(--foreground);
+}
+
+/* Enhanced Responsive Design */
+@media (max-width: 768px) {
+    .spread-metrics {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .strategy-selector {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .strategy-tab {
+        text-align: center;
+        padding: 1rem;
+    }
+    
+    .option-chain-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+    
+    .control-group {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .options-container {
+        flex-direction: column;
+    }
+}
+
+/* Add these styles to option-chain.css */
+
+/* Metrics Grid for Strategy Results */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.metric-card {
+    background: linear-gradient(135deg, var(--card) 0%, #fdfdfd 100%);
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.metric-title {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.metric-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+/* Chart Container */
+.chart-container {
+    margin-top: 2rem;
+    padding: 1rem;
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+}
+
+/* Adjustments Container */
+.adjustments-container {
+    margin-top: 1.5rem;
+}
+
+.adjustments-container h4 {
+    margin-bottom: 1rem;
+    color: var(--foreground);
+}
+
+/* Alert Styles */
+.alert {
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    border-radius: var(--radius);
+    border: 1px solid transparent;
+}
+
+.alert-warning {
+    background-color: rgba(245, 158, 11, 0.1);
+    border-color: rgba(245, 158, 11, 0.3);
+    color: #f59e0b;
+}
+
+.alert-info {
+    background-color: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: #3b82f6;
+}
+
+.alert-high {
+    background-color: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+}
+
+.alert-medium {
+    background-color: rgba(245, 158, 11, 0.1);
+    border-color: rgba(245, 158, 11, 0.3);
+    color: #f59e0b;
+}
+
+/* Strategy-specific table enhancements */
+#vertical-spread-table tbody tr:hover,
+#iron-condor-table tbody tr:hover {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.05), rgba(76, 175, 80, 0.02));
+    cursor: pointer;
+}
+
+/* Execute button styling */
+.execute-vertical-spread-btn,
+.execute-iron-condor-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+/* Loading state for results */
+.strategy-result-panel {
+    min-height: 400px;
+    position: relative;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .metrics-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .metric-card {
+        padding: 1rem;
+    }
+    
+    .chart-container {
+        overflow-x: auto;
+    }
+}

@@ -1,0 +1,371 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup API Keys - TradeEase</title>
+    <link rel="stylesheet" href="{% static 'zerodhatrader/css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'zerodhatrader/css/subscription.css' %}">
+    <link rel="icon" type="image/x-icon" href="{% static 'zerodhatrader/img/favicon.ico' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Add Bootstrap CSS - MISSING IN YOUR CURRENT FILE -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="unified-page">
+    
+    <!-- Subscription Page Navbar (same as subscription plans) -->
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'landing' %}">
+                <i class="fas fa-chart-line"></i>
+                TradeEase
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="navbar-nav ms-auto align-items-center">
+                    {% if user.is_authenticated %}
+                        <a class="nav-link" href="{% url 'index' %}">
+                            <i class="fas fa-chart-bar"></i> Dashboard
+                        </a>
+                        <a class="nav-link" href="{% url 'profile' %}">
+                            <i class="fas fa-user"></i> Profile
+                        </a>
+                        <a class="nav-link" href="{% url 'signout' %}">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    {% else %}
+                        <a class="nav-link" href="{% url 'landing' %}">
+                            <i class="fas fa-home"></i> Home
+                        </a>
+                        <a class="nav-link" href="{% url 'signin' %}">Login</a>
+                        <a class="btn btn-secondary-custom btn-sm px-4 rounded-pill ms-2" href="{% url 'signup' %}">
+                            Get Started
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="api-setup-wrapper">
+        <div class="container">
+            
+            <!-- Progress Indicator -->
+            <div class="setup-progress">
+                <div class="progress-step completed">
+                    <div class="step-icon">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <span class="step-label">Account</span>
+                </div>
+                <div class="progress-line completed"></div>
+                
+                <div class="progress-step completed">
+                    <div class="step-icon">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <span class="step-label">Plan</span>
+                </div>
+                <div class="progress-line completed"></div>
+                
+                <div class="progress-step completed">
+                    <div class="step-icon">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <span class="step-label">Payment</span>
+                </div>
+                <div class="progress-line active"></div>
+                
+                <div class="progress-step active">
+                    <div class="step-icon">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <span class="step-label">API Setup</span>
+                </div>
+                <div class="progress-line"></div>
+                
+                <div class="progress-step">
+                    <div class="step-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <span class="step-label">Trading</span>
+                </div>
+            </div>
+
+            <!-- Header Section -->
+            <div class="setup-header">
+                <div class="setup-hero">
+                    {% if not existing_keys %}
+                        <div class="success-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h1 class="setup-title">Payment Successful!</h1>
+                        <p class="setup-subtitle">One last step - Connect your Zerodha account to start trading.</p>
+                    {% else %}
+                        <div class="success-icon edit-mode">
+                            <i class="fas fa-edit"></i>
+                        </div>
+                        <h1 class="setup-title">Update Your API Keys</h1>
+                        <p class="setup-subtitle">Modify your Zerodha API credentials.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="setup-content">
+                
+                <!-- Tab Navigation -->
+                <div class="setup-tabs">
+                    <button class="tab-btn active" data-tab="form">
+                        <i class="fas fa-keyboard"></i>
+                        <span>Enter API Keys</span>
+                    </button>
+                    <button class="tab-btn" data-tab="instructions">
+                        <i class="fas fa-info-circle"></i>
+                        <span>How to Get Keys</span>
+                    </button>
+                    <button class="tab-btn" data-tab="video">
+                        <i class="fas fa-video"></i>
+                        <span>Video Guide</span>
+                    </button>
+                </div>
+
+                <!-- Tab Content -->
+                <div class="tab-content-wrapper">
+                    
+                    <!-- Form Tab -->
+                    <div id="form-tab" class="tab-content active">
+                        <div class="api-form-card">
+                            <form method="post" class="api-form" id="api-form">
+                                {% csrf_token %}
+                                
+                                <!-- Messages -->
+                                {% if messages %}
+                                    {% for message in messages %}
+                                        <div class="alert alert-{{ message.tags }}">
+                                            <div class="alert-icon">
+                                                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+                                            </div>
+                                            <div class="alert-content">{{ message }}</div>
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+
+                                <!-- API Key Field -->
+                                <div class="form-group">
+                                    <label for="api_key" class="form-label">
+                                        <i class="fas fa-key"></i>
+                                        API Key
+                                    </label>
+                                    <input type="text" 
+                                           id="api_key" 
+                                           name="api_key" 
+                                           class="form-input" 
+                                           placeholder="Enter your Zerodha API Key"
+                                           {% if existing_keys %}value="••••••••••••••••"{% endif %}
+                                           required>
+                                    <small class="form-hint">Your app's API key from Kite Connect dashboard</small>
+                                </div>
+
+                                <!-- API Secret Field -->
+                                <div class="form-group">
+                                    <label for="api_secret" class="form-label">
+                                        <i class="fas fa-lock"></i>
+                                        API Secret
+                                    </label>
+                                    <div class="password-field">
+                                        <input type="password" 
+                                               id="api_secret" 
+                                               name="api_secret" 
+                                               class="form-input" 
+                                               placeholder="Enter your Zerodha API Secret"
+                                               {% if existing_keys %}value="••••••••••••••••"{% endif %}
+                                               required>
+                                        <button type="button" class="password-toggle" onclick="toggleApiSecret()">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <small class="form-hint">Keep this secret safe and never share it</small>
+                                </div>
+
+                                <!-- Security Notice -->
+                                <div class="security-notice">
+                                    <div class="security-icon">
+                                        <i class="fas fa-shield-alt"></i>
+                                    </div>
+                                    <div class="security-content">
+                                        <p><strong>Your data is secure:</strong> API credentials are encrypted with AES-256. We never access your trading passwords or funds.</p>
+                                    </div>
+                                </div>
+
+                                <!-- Form Actions -->
+                                <div class="form-actions">
+                                    <button type="submit" class="btn-primary">
+                                        <i class="fas fa-save"></i>
+                                        {% if existing_keys %}Update & Continue{% else %}Save & Continue{% endif %}
+                                    </button>
+                                    {% if show_skip %}
+                                        <button type="submit" name="action" value="skip" class="btn-secondary">
+                                            Skip for now
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Instructions Tab -->
+                    <div id="instructions-tab" class="tab-content">
+                        <div class="instructions-card">
+                            <h3 class="instructions-title">How to Get Your Zerodha API Keys</h3>
+                            
+                            <div class="instruction-steps">
+                                <div class="instruction-step">
+                                    <div class="step-number">1</div>
+                                    <div class="step-content">
+                                        <h4>Login to Kite Connect</h4>
+                                        <p>Visit <a href="https://developers.kite.trade" target="_blank" class="external-link">developers.kite.trade</a> and login with your Zerodha credentials.</p>
+                                    </div>
+                                </div>
+
+                                <div class="instruction-step">
+                                    <div class="step-number">2</div>
+                                    <div class="step-content">
+                                        <h4>Create a New App</h4>
+                                        <p>Click on "Create new app" and fill in these details:</p>
+                                        <div class="app-details">
+                                            <div class="detail-item">
+                                                <strong>App Name:</strong> TradeEase
+                                            </div>
+                                            <div class="detail-item">
+                                                <strong>Redirect URL:</strong> https://tradeease.com/callback
+                                            </div>
+                                            <div class="detail-item">
+                                                <strong>Description:</strong> Trading platform integration
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="instruction-step">
+                                    <div class="step-number">3</div>
+                                    <div class="step-content">
+                                        <h4>Get Your Credentials</h4>
+                                        <p>After creating the app, you'll see your API Key. Click "Show app secret" to reveal your API Secret.</p>
+                                        <div class="warning-box">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            <div>
+                                                <strong>Important:</strong> Copy and save your API Secret immediately. It won't be shown again!
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="instruction-step">
+                                    <div class="step-number">4</div>
+                                    <div class="step-content">
+                                        <h4>Activate Your App</h4>
+                                        <p>Subscribe to Kite Connect API (₹2000/month) to activate your app. This is charged by Zerodha directly.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Video Tab -->
+                    <div id="video-tab" class="tab-content">
+                        <div class="video-card">
+                            <div class="video-container">
+                                <div class="video-placeholder">
+                                    <i class="fas fa-play-circle"></i>
+                                    <p>Video tutorial coming soon!</p>
+                                </div>
+                            </div>
+                            <div class="video-description">
+                                <h4>Video Tutorial: Setting up Zerodha API Keys</h4>
+                                <p>Watch this step-by-step video guide to learn how to create and configure your Kite Connect app.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Help Section -->
+                <div class="help-section">
+                    <h3 class="help-title">Need Help?</h3>
+                    <div class="help-links">
+                        <a href="#" class="help-link" onclick="openChat()">
+                            <i class="fas fa-comments"></i>
+                            <span>Live Chat</span>
+                        </a>
+                        <a href="mailto:support@tradeease.com" class="help-link">
+                            <i class="fas fa-envelope"></i>
+                            <span>Email Support</span>
+                        </a>
+                        <a href="/docs/api-setup" class="help-link">
+                            <i class="fas fa-book"></i>
+                            <span>Documentation</span>
+                        </a>
+                        <a href="tel:+911234567890" class="help-link">
+                            <i class="fas fa-phone"></i>
+                            <span>Call Support</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle password visibility
+        function toggleApiSecret() {
+            const input = document.getElementById('api_secret');
+            const icon = event.target.closest('button').querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tabName = this.getAttribute('data-tab');
+                
+                // Remove active classes
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+                
+                // Add active classes
+                this.classList.add('active');
+                document.getElementById(tabName + '-tab').classList.add('active');
+            });
+        });
+
+        // Clear placeholder values for existing keys
+        {% if existing_keys %}
+        ['api_key', 'api_secret'].forEach(fieldId => {
+            document.getElementById(fieldId).addEventListener('focus', function() {
+                if (this.value === '••••••••••••••••') {
+                    this.value = '';
+                }
+            });
+        });
+        {% endif %}
+
+        function openChat() {
+            alert('Chat support will open here');
+        }
+    </script>
+</body>
+</html>

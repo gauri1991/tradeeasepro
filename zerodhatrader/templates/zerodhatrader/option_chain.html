@@ -1,0 +1,644 @@
+<!-- zerodhatrader/templates/zerodhatrader/option_chain.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Option Chain Analysis - TradeEase</title>
+    <!-- Load CSS files -->
+    <link rel="stylesheet" href="{% static 'zerodhatrader/css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'zerodhatrader/css/option-chain.css' %}">
+</head>
+
+<body>
+    <div class="container">
+        {% csrf_token %}
+        <!-- Header -->
+        <header class="header">
+            <h1>Option Chain Analysis</h1>
+            <div class="connection-status">
+                <span id="connection-badge" class="text-sm text-danger">Disconnected</span>
+            </div>
+        </header>
+
+        <!-- Strategy selector -->
+        <div class="strategy-selector">
+            <div class="strategy-tab active" data-strategy="calendar-spread">Calendar Spread</div>
+            <div class="strategy-tab" data-strategy="vertical-spread">Vertical Spread</div>
+            <div class="strategy-tab" data-strategy="iron-condor">Iron Condor</div>
+            <div class="strategy-tab" data-strategy="butterfly">Butterfly</div>
+            <div class="strategy-tab" data-strategy="diagonal-spread">Diagonal Spread</div>
+            <div class="strategy-tab" data-strategy="ratio-spread">Ratio Spread</div>
+        </div>
+
+        <!-- Strategy Description -->
+        <div class="card mb-4">
+            <div class="p-4" id="strategy-description">
+                <h2 class="card-title">Calendar Spread</h2>
+                <p class="strategy-desc">A calendar spread involves selling a near-term option and buying a longer-term option with the same strike price. This strategy benefits from time decay and volatility expansion.</p>
+            </div>
+        </div>
+
+        <!-- Strategy-specific control panels -->
+        <div id="strategy-controls">
+            <!-- Calendar Spread Controls -->
+            <div class="strategy-control-panel" id="calendar-spread-controls" style="display: block;">
+                <div class="card">
+                    <div class="p-4">
+                        <h2 class="card-title">Calendar Spread Analysis</h2>
+                        <div class="option-chain-controls">
+                            <!-- Index Selection -->
+                            <div class="control-group">
+                                <label class="control-label">Index:</label>
+                                <select id="cs-index-select" class="input">
+                                    <option value="NIFTY">NIFTY</option>
+                                    <option value="BANKNIFTY">BANK NIFTY</option>
+                                </select>
+                            </div>
+
+                            <!-- Spot Price -->
+                            <div class="control-group">
+                                <label class="control-label">Spot Price:</label>
+                                <input type="number" id="cs-spot-price" class="input" placeholder="Spot Price">
+                            </div>
+
+                            <!-- Near Month Expiry -->
+                            <div class="control-group">
+                                <label class="control-label">Near Month:</label>
+                                <select id="cs-near-month-expiry" class="input">
+                                    <option value="">Select Expiry</option>
+                                </select>
+                            </div>
+
+                            <!-- Far Month Expiry -->
+                            <div class="control-group">
+                                <label class="control-label">Far Month:</label>
+                                <select id="cs-far-month-expiry" class="input">
+                                    <option value="">Select Expiry</option>
+                                </select>
+                            </div>
+
+                            <!-- Option Type -->
+                            <div class="control-group">
+                                <label class="control-label">Type:</label>
+                                <select id="cs-option-type" class="input">
+                                    <option value="CE">Call Option</option>
+                                    <option value="PE">Put Option</option>
+                                </select>
+                            </div>
+
+                            <!-- Quantity -->
+                            <div class="control-group">
+                                <label class="control-label">Quantity:</label>
+                                <input type="number" id="cs-quantity" class="input" value="75" min="75" step="75">
+                            </div>
+
+                            <!-- Load Button -->
+                            <button id="cs-load-spreads-btn" class="button button-primary">Load Spreads</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vertical Spread Controls (Updated) -->
+            <div class="strategy-control-panel" id="vertical-spread-controls" style="display: none;">
+                <div class="card">
+                    <div class="p-4">
+                        <h2 class="card-title">Vertical Spread Analysis</h2>
+                        <div class="option-chain-controls">
+                            <!-- Index Selection -->
+                            <div class="control-group">
+                                <label class="control-label">Index:</label>
+                                <select id="vs-index-select" class="input">
+                                    <option value="NIFTY">NIFTY</option>
+                                    <option value="BANKNIFTY">BANK NIFTY</option>
+                                </select>
+                            </div>
+
+                            <!-- Spot Price -->
+                            <div class="control-group">
+                                <label class="control-label">Spot Price:</label>
+                                <input type="number" id="vs-spot-price" class="input" placeholder="Spot Price" value="22500" step="50">
+                            </div>
+
+                            <!-- Expiry -->
+                            <div class="control-group">
+                                <label class="control-label">Expiry:</label>
+                                <select id="vs-expiry" class="input">
+                                    <option value="">Select Expiry</option>
+                                </select>
+                            </div>
+
+                            <!-- Spread Type -->
+                            <div class="control-group">
+                                <label class="control-label">Spread Type:</label>
+                                <select id="vs-spread-type" class="input">
+                                    <option value="bull_call">Bull Call Spread</option>
+                                    <option value="bear_put">Bear Put Spread</option>
+                                    <option value="bull_put">Bull Put Spread</option>
+                                    <option value="bear_call">Bear Call Spread</option>
+                                </select>
+                            </div>
+
+                            <!-- Quantity -->
+                            <div class="control-group">
+                                <label class="control-label">Quantity:</label>
+                                <input type="number" id="vs-quantity" class="input" value="75" min="75" step="75">
+                            </div>
+
+                            <!-- Load Button -->
+                            <button id="vs-load-spreads-btn" class="button button-primary">Calculate Spreads</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Iron Condor Controls (Updated) -->
+            <div class="strategy-control-panel" id="iron-condor-controls" style="display: none;">
+                <div class="card">
+                    <div class="p-4">
+                        <h2 class="card-title">Iron Condor Analysis</h2>
+                        <div class="option-chain-controls">
+                            <!-- Index Selection -->
+                            <div class="control-group">
+                                <label class="control-label">Index:</label>
+                                <select id="ic-index-select" class="input">
+                                    <option value="NIFTY">NIFTY</option>
+                                    <option value="BANKNIFTY">BANK NIFTY</option>
+                                </select>
+                            </div>
+
+                            <!-- Spot Price -->
+                            <div class="control-group">
+                                <label class="control-label">Spot Price:</label>
+                                <input type="number" id="ic-spot-price" class="input" placeholder="Spot Price" value="22500" step="50">
+                            </div>
+
+                            <!-- Expiry -->
+                            <div class="control-group">
+                                <label class="control-label">Expiry:</label>
+                                <select id="ic-expiry" class="input">
+                                    <option value="">Select Expiry</option>
+                                </select>
+                            </div>
+
+                            <!-- Wing Width -->
+                            <div class="control-group">
+                                <label class="control-label">Wing Width:</label>
+                                <input type="number" id="ic-wing-width" class="input" value="200" step="50">
+                            </div>
+
+                            <!-- Body Width -->
+                            <div class="control-group">
+                                <label class="control-label">Body Width:</label>
+                                <input type="number" id="ic-body-width" class="input" value="100" step="50">
+                            </div>
+
+                            <!-- Quantity -->
+                            <div class="control-group">
+                                <label class="control-label">Quantity:</label>
+                                <input type="number" id="ic-quantity" class="input" value="75" min="75" step="75">
+                            </div>
+
+                            <!-- Load Button -->
+                            <button id="ic-load-spreads-btn" class="button button-primary">Calculate Iron Condor</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Butterfly Controls (Updated) -->
+            <div class="strategy-control-panel" id="butterfly-controls" style="display: none;">
+                <div class="card">
+                    <div class="p-4">
+                        <h2 class="card-title">Butterfly Analysis</h2>
+                        <div class="option-chain-controls">
+                            <!-- Index Selection -->
+                            <div class="control-group">
+                                <label class="control-label">Index:</label>
+                                <select id="bf-index-select" class="input">
+                                    <option value="NIFTY">NIFTY</option>
+                                    <option value="BANKNIFTY">BANK NIFTY</option>
+                                </select>
+                            </div>
+
+                            <!-- Spot Price -->
+                            <div class="control-group">
+                                <label class="control-label">Spot Price:</label>
+                                <input type="number" id="bf-spot-price" class="input" placeholder="Spot Price" value="22500" step="50">
+                            </div>
+
+                            <!-- Expiry -->
+                            <div class="control-group">
+                                <label class="control-label">Expiry:</label>
+                                <select id="bf-expiry" class="input">
+                                    <option value="">Select Expiry</option>
+                                </select>
+                            </div>
+
+                            <!-- Option Type -->
+                            <div class="control-group">
+                                <label class="control-label">Type:</label>
+                                <select id="bf-option-type" class="input">
+                                    <option value="CE">Call Butterfly</option>
+                                    <option value="PE">Put Butterfly</option>
+                                </select>
+                            </div>
+
+                            <!-- Wing Width -->
+                            <div class="control-group">
+                                <label class="control-label">Wing Width:</label>
+                                <input type="number" id="bf-wing-width" class="input" value="100" step="50">
+                            </div>
+
+                            <!-- Quantity -->
+                            <div class="control-group">
+                                <label class="control-label">Quantity:</label>
+                                <input type="number" id="bf-quantity" class="input" value="75" min="75" step="75">
+                            </div>
+
+                            <!-- Load Button -->
+                            <button id="bf-load-spreads-btn" class="button button-primary">Calculate Butterfly</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Diagonal Spread Controls (Updated) -->
+            <div class="strategy-control-panel" id="diagonal-spread-controls" style="display: none;">
+                <div class="card">
+                    <div class="p-4">
+                        <h2 class="card-title">Diagonal Spread Analysis</h2>
+                        <div class="option-chain-controls">
+                            <!-- Index Selection -->
+                            <div class="control-group">
+                                <label class="control-label">Index:</label>
+                                <select id="ds-index-select" class="input">
+                                    <option value="NIFTY">NIFTY</option>
+                                    <option value="BANKNIFTY">BANK NIFTY</option>
+                                </select>
+                            </div>
+
+                            <!-- Spot Price -->
+                            <div class="control-group">
+                                <label class="control-label">Spot Price:</label>
+                                <input type="number" id="ds-spot-price" class="input" placeholder="Spot Price" value="22500" step="50">
+                            </div>
+
+                            <!-- Near Month Expiry -->
+                            <div class="control-group">
+                                <label class="control-label">Near Month:</label>
+                                <select id="ds-near-month-expiry" class="input">
+                                    <option value="">Select Expiry</option>
+                                </select>
+                            </div>
+
+                            <!-- Far Month Expiry -->
+                            <div class="control-group">
+                                <label class="control-label">Far Month:</label>
+                                <select id="ds-far-month-expiry" class="input">
+                                    <option value="">Select Expiry</option>
+                                </select>
+                            </div>
+
+                            <!-- Option Type -->
+                            <div class="control-group">
+                                <label class="control-label">Type:</label>
+                                <select id="ds-option-type" class="input">
+                                    <option value="CE">Call Diagonal</option>
+                                    <option value="PE">Put Diagonal</option>
+                                </select>
+                            </div>
+
+                            <!-- Spread Type -->
+                            <div class="control-group">
+                                <label class="control-label">Spread Type:</label>
+                                <select id="ds-spread-type" class="input">
+                                    <option value="bullish">Bullish</option>
+                                    <option value="bearish">Bearish</option>
+                                </select>
+                            </div>
+
+                            <!-- Quantity -->
+                            <div class="control-group">
+                                <label class="control-label">Quantity:</label>
+                                <input type="number" id="ds-quantity" class="input" value="75" min="75" step="75">
+                            </div>
+
+                            <!-- Load Button -->
+                            <button id="ds-load-spreads-btn" class="button button-primary">Calculate Diagonal</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ratio Spread Controls (Updated) -->
+            <div class="strategy-control-panel" id="ratio-spread-controls" style="display: none;">
+                <div class="card">
+                    <div class="p-4">
+                        <h2 class="card-title">Ratio Spread Analysis</h2>
+                        <div class="option-chain-controls">
+                            <!-- Index Selection -->
+                            <div class="control-group">
+                                <label class="control-label">Index:</label>
+                                <select id="rs-index-select" class="input">
+                                    <option value="NIFTY">NIFTY</option>
+                                    <option value="BANKNIFTY">BANK NIFTY</option>
+                                </select>
+                            </div>
+
+                            <!-- Spot Price -->
+                            <div class="control-group">
+                                <label class="control-label">Spot Price:</label>
+                                <input type="number" id="rs-spot-price" class="input" placeholder="Spot Price" value="22500" step="50">
+                            </div>
+
+                            <!-- Expiry -->
+                            <div class="control-group">
+                                <label class="control-label">Expiry:</label>
+                                <select id="rs-expiry" class="input">
+                                    <option value="">Select Expiry</option>
+                                </select>
+                            </div>
+
+                            <!-- Option Type -->
+                            <div class="control-group">
+                                <label class="control-label">Type:</label>
+                                <select id="rs-option-type" class="input">
+                                    <option value="CE">Call Ratio</option>
+                                    <option value="PE">Put Ratio</option>
+                                </select>
+                            </div>
+
+                            <!-- Long Quantity -->
+                            <div class="control-group">
+                                <label class="control-label">Long Quantity:</label>
+                                <input type="number" id="rs-long-quantity" class="input" value="75" min="75" step="75">
+                            </div>
+
+                            <!-- Short Quantity -->
+                            <div class="control-group">
+                                <label class="control-label">Short Quantity:</label>
+                                <input type="number" id="rs-short-quantity" class="input" value="150" min="75" step="75">
+                            </div>
+
+                            <!-- Load Button -->
+                            <button id="rs-load-spreads-btn" class="button button-primary">Calculate Ratio</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Strategy-specific results containers -->
+        <div id="strategy-results">
+            <!-- Calendar Spread Results -->
+            <div class="strategy-result-panel" id="calendar-spread-results" style="display: block;">
+                <!-- Spread Metrics -->
+                <div class="spread-metrics">
+                    <div class="spread-metric-card">
+                        <div class="spread-metric-value" id="cs-avg-iv-diff">-</div>
+                        <div class="spread-metric-title">Avg. IV Differential</div>
+                    </div>
+                    <div class="spread-metric-card">
+                        <div class="spread-metric-value" id="cs-avg-theta-ratio">-</div>
+                        <div class="spread-metric-title">Avg. Theta Ratio</div>
+                    </div>
+                    <div class="spread-metric-card">
+                        <div class="spread-metric-value" id="cs-avg-debit">-</div>
+                        <div class="spread-metric-title">Avg. Debit Amount</div>
+                    </div>
+                    <div class="spread-metric-card">
+                        <div class="spread-metric-value" id="cs-spreads-count">-</div>
+                        <div class="spread-metric-title">Available Spreads</div>
+                    </div>
+                </div>
+
+                <!-- Calendar Spread Table -->
+                <div class="card">
+                    <table class="calendar-spread-table" id="calendar-spread-table">
+                        <thead>
+                            <tr>
+                                <th>Strike</th>
+                                <th>Near Month Option</th>
+                                <th>Near Month IV</th>
+                                <th>Near Month Premium</th>
+                                <th>Far Month Option</th>
+                                <th>Far Month IV</th>
+                                <th>Far Month Premium</th>
+                                <th>Debit</th>
+                                <th>IV Diff</th>
+                                <th>Theta Ratio</th>
+                                <th>Probability</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="12" class="text-center">Select indices and expiry dates to load calendar spreads</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Recommendations -->
+                <div class="recommendations">
+                    <h2 class="card-title">Calendar Spread Recommendations</h2>
+                    <div id="cs-recommendations-container">
+                        <div class="recommendation-item">
+                            <div>
+                                <div class="recommendation-title">Select expiry dates to view recommendations</div>
+                                <div class="recommendation-desc">The system will analyze IV skew and other factors to identify high-probability calendar spreads</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vertical Spread Results (Updated) -->
+            <div class="strategy-result-panel" id="vertical-spread-results" style="display: none;">
+                <!-- Vertical Spread Metrics -->
+                <div class="spread-metrics">
+                    <div class="spread-metric-card">
+                        <div class="spread-metric-value" id="vs-avg-risk-reward">-</div>
+                        <div class="spread-metric-title">Avg Risk/Reward</div>
+                    </div>
+                    <div class="spread-metric-card">
+                        <div class="spread-metric-value" id="vs-avg-probability">-</div>
+                        <div class="spread-metric-title">Avg Probability</div>
+                    </div>
+                    <div class="spread-metric-card">
+                        <div class="spread-metric-value" id="vs-best-risk-reward">-</div>
+                        <div class="spread-metric-title">Best Risk/Reward</div>
+                    </div>
+                    <div class="spread-metric-card">
+                        <div class="spread-metric-value" id="vs-spreads-count">-</div>
+                        <div class="spread-metric-title">Total Spreads</div>
+                    </div>
+                </div>
+
+                <!-- Vertical Spread Table -->
+                <div class="card">
+                    <table class="vertical-spread-table" id="vertical-spread-table">
+                        <thead>
+                            <tr>
+                                <th>Strikes</th>
+                                <th>Long Premium</th>
+                                <th>Short Premium</th>
+                                <th>Net Debit/Credit</th>
+                                <th>Breakeven</th>
+                                <th>Max Profit</th>
+                                <th>Max Loss</th>
+                                <th>Risk/Reward</th>
+                                <th>Probability</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="10" class="text-center">Click "Calculate Spreads" to load data</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Iron Condor Results (Updated) -->
+            <div class="strategy-result-panel" id="iron-condor-results" style="display: none;">
+                <!-- Metrics Card -->
+                <div class="spread-metrics">
+                    <div class="spread-metric-card">
+                        <div class="spread-metric-value positive-value" id="ic-net-credit">-</div>
+                        <div class="spread-metric-title">Net Credit</div>
+                    </div>
+                    <div class="spread-metric-card">
+                        <div class="spread-metric-value positive-value" id="ic-max-profit">-</div>
+                        <div class="spread-metric-title">Max Profit</div>
+                    </div>
+                    <div class="spread-metric-card">
+                        <div class="spread-metric-value negative-value" id="ic-max-loss">-</div>
+                        <div class="spread-metric-title">Max Loss</div>
+                    </div>
+                    <div class="spread-metric-card">
+                        <div class="spread-metric-value" id="ic-lower-breakeven">-</div>
+                        <div class="spread-metric-title">Lower Breakeven</div>
+                    </div>
+                    <div class="spread-metric-card">
+                        <div class="spread-metric-value" id="ic-upper-breakeven">-</div>
+                        <div class="spread-metric-title">Upper Breakeven</div>
+                    </div>
+                    <div class="spread-metric-card">
+                        <div class="spread-metric-value" id="ic-profit-zone">-</div>
+                        <div class="spread-metric-title">Profit Zone</div>
+                    </div>
+                    <div class="spread-metric-card">
+                        <div class="spread-metric-value" id="ic-probability">-</div>
+                        <div class="spread-metric-title">Probability</div>
+                    </div>
+                </div>
+
+                <!-- Iron Condor Table -->
+                <div class="card">
+                    <table class="iron-condor-table" id="iron-condor-table">
+                        <thead>
+                            <tr>
+                                <th>Option Type</th>
+                                <th>Action</th>
+                                <th>Strike</th>
+                                <th>Premium</th>
+                                <th>Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="5" class="text-center">Click "Calculate Iron Condor" to load data</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div id="ic-adjustments" class="adjustments-container mt-3"></div>
+            </div>
+
+            <!-- Butterfly Results (Updated) -->
+            <div class="strategy-result-panel" id="butterfly-results" style="display: none;">
+                <!-- BF Metrics -->
+                <div class="spread-metrics">
+                    <div class="spread-metric-card">
+                        <div class="spread-metric-value negative-value" id="bf-net-debit">-</div>
+                        <div class="spread-metric-title">Net Debit</div>
+                    </div>
+                    <div class="spread-metric-card">
+                        <div class="spread-metric-value positive-value" id="bf-max-profit">-</div>
+                        <div class="spread-metric-title">Max Profit</div>
+                    </div>
+                    <div class="spread-metric-card">
+                        <div class="spread-metric-value negative-value" id="bf-max-loss">-</div>
+                        <div class="spread-metric-title">Max Loss</div>
+                    </div>
+                    <div class="spread-metric-card">
+                        <div class="spread-metric-value" id="bf-lower-breakeven">-</div>
+                        <div class="spread-metric-title">Lower Breakeven</div>
+                    </div>
+                    <div class="spread-metric-card">
+                        <div class="spread-metric-value" id="bf-upper-breakeven">-</div>
+                        <div class="spread-metric-title">Upper Breakeven</div>
+                    </div>
+                    <div class="spread-metric-card">
+                        <div class="spread-metric-value" id="bf-profit-zone">-</div>
+                        <div class="spread-metric-title">Profit Zone</div>
+                    </div>
+                    <div class="spread-metric-card">
+                        <div class="spread-metric-value" id="bf-risk-reward">-</div>
+                        <div class="spread-metric-title">Risk/Reward</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="butterfly-payoff-chart" width="600" height="300"></canvas>
+                </div>
+            </div>
+
+            <!-- Diagonal Spread Results (Updated) -->
+            <div class="strategy-result-panel" id="diagonal-spread-results" style="display: none;">
+                <div class="card mb-4">
+                    <div class="p-4">
+                        <h3 class="card-title">Diagonal Spread Analysis</h3>
+                        <div id="diagonal-spread-metrics"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ratio Spread Results (Updated) -->
+            <div class="strategy-result-panel" id="ratio-spread-results" style="display: none;">
+                <div class="card mb-4">
+                    <div class="p-4">
+                        <h3 class="card-title">Ratio Spread Analysis</h3>
+                        <div id="ratio-spread-metrics"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WebSocket Debug Panel -->
+        <div class="card" style="margin-top: 1rem;">
+            <h2 class="card-title">WebSocket Debug</h2>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <button id="clear-ws-log" class="button button-outline" style="font-size: 0.75rem;">Clear Log</button>
+                <label>
+                    <input type="checkbox" id="auto-scroll" checked>
+                    Auto-scroll
+                </label>
+            </div>
+            <div id="ws-debug-log" style="max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 12px; background: #f5f5f5; padding: 0.5rem; border-radius: 0.25rem; white-space: pre-wrap; word-break: break-word;">WebSocket debug log will appear here</div>
+        </div>
+    </div>
+
+    <!-- Load JavaScript files -->
+    <script src="{% static 'zerodhatrader/js/base.js' %}"></script>
+    <script src="{% static 'zerodhatrader/js/websocket.js' %}"></script>
+    <script src="{% static 'zerodhatrader/js/option-chain.js' %}"></script>
+
+</body>
+</html>

@@ -1,0 +1,273 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - TradeEase</title>
+    <link rel="stylesheet" href="{% static 'zerodhatrader/css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'zerodhatrader/css/styles.css' %}">
+    <link rel="icon" type="image/x-icon" href="{% static 'zerodhatrader/img/favicon.ico' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Professional Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1>
+                    <i class="fas fa-chart-line"></i>
+                    TradeEase
+                </h1>
+                <span class="page-subtitle">Account Settings</span>
+            </div>
+            <div class="header-controls">
+                <a href="{% url 'index' %}" class="button button-outline">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Trading
+                </a>
+            </div>
+        </header>
+
+        <!-- Profile Content Grid -->
+        <div class="profile-container">
+            
+            <!-- Left Column -->
+            <div class="profile-left">
+                
+                <!-- User Info Card -->
+                <div class="card profile-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-user"></i>
+                            Profile Information
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="profile-avatar">
+                            <div class="avatar-circle">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="avatar-info">
+                                <h3 class="user-name">{{ user.get_full_name|default:user.username }}</h3>
+                                <p class="user-role">{{ user_subscription.plan.name|default:"Free Trial" }} Member</p>
+                            </div>
+                        </div>
+                        
+                        <div class="profile-details">
+                            <div class="detail-row">
+                                <div class="detail-label">
+                                    <i class="fas fa-envelope"></i>
+                                    Email
+                                </div>
+                                <div class="detail-value">{{ user.email }}</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    Member Since
+                                </div>
+                                <div class="detail-value">{{ user.date_joined|date:"F d, Y" }}</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">
+                                    <i class="fas fa-clock"></i>
+                                    Last Login
+                                </div>
+                                <div class="detail-value">{{ user.last_login|date:"F d, Y H:i"|default:"Never" }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Settings Card -->
+                <div class="card security-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-shield-alt"></i>
+                            Security Settings
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="security-options">
+                            <a href="{% url 'password_reset' %}" class="security-option">
+                                <div class="option-icon">
+                                    <i class="fas fa-key"></i>
+                                </div>
+                                <div class="option-content">
+                                    <h4>Change Password</h4>
+                                    <p>Update your account password</p>
+                                </div>
+                                <div class="option-action">
+                                    <i class="fas fa-chevron-right"></i>
+                                </div>
+                            </a>
+                            
+                            <div class="security-option" onclick="alert('2FA coming soon!')">
+                                <div class="option-icon">
+                                    <i class="fas fa-mobile-alt"></i>
+                                </div>
+                                <div class="option-content">
+                                    <h4>Two-Factor Authentication</h4>
+                                    <p>Add an extra layer of security</p>
+                                </div>
+                                <div class="option-action">
+                                    <span class="coming-soon">Coming Soon</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="profile-right">
+                
+                <!-- Subscription Status Card -->
+                <div class="card subscription-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-crown"></i>
+                            Subscription Status
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% if user_subscription %}
+                        <div class="subscription-overview">
+                            <div class="subscription-badge">
+                                <span class="status-indicator status-{{ user_subscription.status|lower }}"></span>
+                                <span class="status-text">{{ user_subscription.get_status_display }}</span>
+                            </div>
+                            
+                            {% if user_subscription.plan %}
+                            <div class="plan-info">
+                                <h3 class="plan-name">{{ user_subscription.plan.name }}</h3>
+                                <p class="plan-price">₹{{ user_subscription.plan.price }}/{{ user_subscription.plan.get_plan_type_display|lower }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="subscription-details">
+                            <div class="detail-row">
+                                <div class="detail-label">Days Remaining</div>
+                                <div class="detail-value">
+                                    <span class="days-count">{{ user_subscription.days_remaining }}</span> days
+                                </div>
+                            </div>
+                            
+                            {% if user_subscription.status == 'ACTIVE' %}
+                            <div class="detail-row">
+                                <div class="detail-label">Expires On</div>
+                                <div class="detail-value">{{ user_subscription.subscription_end_date|date:"F d, Y" }}</div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if user_subscription.status == 'TRIAL' %}
+                            <div class="detail-row">
+                                <div class="detail-label">Trial Ends</div>
+                                <div class="detail-value">{{ user_subscription.trial_end_date|date:"F d, Y" }}</div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="subscription-actions">
+                            <a href="{% url 'subscription_plans' %}" class="button button-primary">
+                                {% if user_subscription.status == 'TRIAL' %}
+                                    <i class="fas fa-arrow-up"></i>
+                                    Upgrade Plan
+                                {% else %}
+                                    <i class="fas fa-cog"></i>
+                                    Manage Subscription
+                                {% endif %}
+                            </a>
+                        </div>
+                        {% else %}
+                        <div class="no-subscription">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>No subscription found</p>
+                            <a href="{% url 'subscription_plans' %}" class="button button-primary">Choose Plan</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- API Configuration Card -->
+                <div class="card api-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-plug"></i>
+                            Zerodha API Configuration
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% if user_keys %}
+                        <div class="api-status-overview">
+                            <div class="api-status-badge">
+                                <span class="status-indicator status-{{ user_keys.is_active|yesno:'active,inactive' }}"></span>
+                                <span class="status-text">
+                                    {% if user_keys.is_active %}Connected{% else %}Disconnected{% endif %}
+                                </span>
+                            </div>
+                            <div class="api-last-update">
+                                Last updated: {{ user_keys.updated_at|date:"M d, Y H:i" }}
+                            </div>
+                        </div>
+
+                        <form method="post" action="{% url 'update_api_keys' %}" class="api-form">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="api_key" class="form-label">
+                                    <i class="fas fa-key"></i>
+                                    API Key
+                                </label>
+                                <input type="text" 
+                                       id="api_key"
+                                       name="api_key" 
+                                       class="form-input" 
+                                       placeholder="Enter new API key to update"
+                                       autocomplete="off">
+                                <small class="form-help">Leave blank to keep current key</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="api_secret" class="form-label">
+                                    <i class="fas fa-lock"></i>
+                                    API Secret
+                                </label>
+                                <input type="password" 
+                                       id="api_secret"
+                                       name="api_secret" 
+                                       class="form-input" 
+                                       placeholder="Enter new API secret to update"
+                                       autocomplete="new-password">
+                                <small class="form-help">Leave blank to keep current secret</small>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="submit" class="button button-primary">
+                                    <i class="fas fa-save"></i>
+                                    Update API Keys
+                                </button>
+                            </div>
+                        </form>
+                        
+                        {% else %}
+                        <div class="no-api-keys">
+                            <div class="empty-state">
+                                <i class="fas fa-plug"></i>
+                                <h3>No API Keys Configured</h3>
+                                <p>Connect your Zerodha account to start trading</p>
+                                <a href="{% url 'api_keys_setup' %}" class="button button-primary">
+                                    <i class="fas fa-plus"></i>
+                                    Setup API Keys
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
