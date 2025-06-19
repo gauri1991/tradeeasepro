@@ -185,3 +185,4 @@ zipp==3.22.0
 zope.event==5.0
 zope.interface==7.2
 zopfli==0.2.3.post1
+whitenoise==6.6.0
