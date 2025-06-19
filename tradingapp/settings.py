@@ -1,4 +1,4 @@
-# tradingapp/settings.py - Fixed Version with Cross-Platform Support
+# tradingapp/settings.py - Dokploy Production Ready
 
 import os
 from pathlib import Path
@@ -33,13 +33,16 @@ if PRODUCTION:
 else:
     SECRET_KEY = 'hrnb94arimodlveleesxf7e1kkjo84lj'  # Your dev key
 
-# Dynamic ALLOWED_HOSTS
+# Dynamic ALLOWED_HOSTS - ADD DOKPLOY INTERNAL NETWORK
 if PRODUCTION:
     ALLOWED_HOSTS = [
         'tradeeasepro.com',
         'www.tradeeasepro.com',
         'api.tradeeasepro.com',
-        os.environ.get('SERVER_IP', ''),  # Server IP
+        '168.231.102.6',  # Your server IP
+        'localhost',      # For Dokploy internal communication
+        '127.0.0.1',      # For Dokploy internal communication
+        os.environ.get('SERVER_IP', ''),
     ]
 elif ENVIRONMENT == 'staging':
     ALLOWED_HOSTS = ['staging.tradeeasepro.com', '127.0.0.1', 'localhost']
@@ -95,9 +98,17 @@ TEMPLATES = [
 # Channels settings with Redis backend
 ASGI_APPLICATION = 'tradingapp.asgi.application'
 
-# Redis Configuration - Environment specific
+# Redis Configuration - UPDATED FOR DOKPLOY SERVICES
 if PRODUCTION:
-    REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+    # Dokploy service names for internal communication
+    REDIS_HOST = os.environ.get('REDIS_HOST', 'tradeeasepro-redis')
+    REDIS_PORT = os.environ.get('REDIS_PORT', '6379')
+    REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', '')
+    
+    if REDIS_PASSWORD:
+        REDIS_URL = f"redis://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/0"
+    else:
+        REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
 else:
     REDIS_URL = 'redis://localhost:6379/0'
 
@@ -114,7 +125,7 @@ CHANNEL_LAYERS = {
 
 WSGI_APPLICATION = 'tradingapp.wsgi.application'
 
-# Database - Environment specific
+# Database - UPDATED FOR DOKPLOY SERVICES
 if PRODUCTION:
     DATABASES = {
         'default': {
@@ -122,11 +133,8 @@ if PRODUCTION:
             'NAME': os.environ.get('DB_NAME', 'tradeeasepro'),
             'USER': os.environ.get('DB_USER', 'postgres'),
             'PASSWORD': os.environ.get('DB_PASSWORD'),
-            'HOST': os.environ.get('DB_HOST', 'localhost'),
+            'HOST': os.environ.get('DB_HOST', 'tradeeasepro-db'),  # Dokploy service name
             'PORT': os.environ.get('DB_PORT', '5432'),
-            'OPTIONS': {
-                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-            },
             'CONN_MAX_AGE': 60,
         }
     }
@@ -264,11 +272,13 @@ if PRODUCTION:
         SESSION_COOKIE_SECURE = True
         CSRF_COOKIE_SECURE = True
 
-# CSRF settings
+# CSRF settings - UPDATED FOR DOKPLOY
 if PRODUCTION:
     CSRF_TRUSTED_ORIGINS = [
         'https://tradeeasepro.com',
         'https://www.tradeeasepro.com',
+        'http://168.231.102.6',   # During SSL setup
+        'https://168.231.102.6',  # After SSL setup
     ]
 else:
     CSRF_COOKIE_SECURE = False
@@ -310,9 +320,9 @@ else:
     from cryptography.fernet import Fernet
     ENCRYPTION_KEY = Fernet.generate_key().decode()
 
-# Redis Connection Settings for Pub-Sub
+# Redis Connection Settings for Pub-Sub - UPDATED
 REDIS_SETTINGS = {
-    'HOST': os.environ.get('REDIS_HOST', 'localhost'),
+    'HOST': os.environ.get('REDIS_HOST', 'tradeeasepro-redis'),  # Dokploy service name
     'PORT': int(os.environ.get('REDIS_PORT', 6379)),
     'DB': int(os.environ.get('REDIS_DB', 0)),
     'PASSWORD': os.environ.get('REDIS_PASSWORD'),
