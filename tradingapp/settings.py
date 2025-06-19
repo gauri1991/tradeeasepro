@@ -46,7 +46,7 @@ if PRODUCTION:
         '168.231.102.6',  # Your server IP
         'localhost',      # For Dokploy internal communication
         '127.0.0.1',      # For Dokploy internal communication
-        os.environ.get('SERVER_IP', ''),
+                          #os.environ.get('SERVER_IP', ''),
     ]
 elif ENVIRONMENT == 'staging':
     ALLOWED_HOSTS = ['staging.tradeeasepro.com', '127.0.0.1', 'localhost']
