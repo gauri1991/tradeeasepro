@@ -3,6 +3,7 @@
 import os
 from pathlib import Path
 import platform
+from django.core.management.utils import get_random_secret_key
 
 # Build paths
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,12 +27,15 @@ PRODUCTION = ENVIRONMENT == 'production'
 print(f"🚀 TradeEasePro starting in {ENVIRONMENT.upper()} mode (DEBUG={DEBUG})")
 
 # Dynamic SECRET_KEY
-if PRODUCTION:
-    SECRET_KEY = os.environ.get('SECRET_KEY')
-    if not SECRET_KEY:
+
+
+# At the top of settings.py, replace your SECRET_KEY section with:
+if os.environ.get('ENVIRONMENT') == 'production':
+    SECRET_KEY = os.environ.get('SECRET_KEY', get_random_secret_key())
+    if not os.environ.get('SECRET_KEY') and 'collectstatic' not in sys.argv:
         raise ValueError("SECRET_KEY environment variable is required in production")
 else:
-    SECRET_KEY = 'hrnb94arimodlveleesxf7e1kkjo84lj'  # Your dev key
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-dev-key-only')
 
 # Dynamic ALLOWED_HOSTS - ADD DOKPLOY INTERNAL NETWORK
 if PRODUCTION:
