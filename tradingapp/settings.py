@@ -101,7 +101,7 @@ ASGI_APPLICATION = 'tradingapp.asgi.application'
 # Redis Configuration - UPDATED FOR DOKPLOY SERVICES
 if PRODUCTION:
     # Dokploy service names for internal communication
-    REDIS_HOST = os.environ.get('REDIS_HOST', 'tradeeasepro-redis')
+    REDIS_HOST = os.environ.get('REDIS_HOST', 'redis-service')
     REDIS_PORT = os.environ.get('REDIS_PORT', '6379')
     REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', '')
     
@@ -133,7 +133,7 @@ if PRODUCTION:
             'NAME': os.environ.get('DB_NAME', 'tradeeasepro'),
             'USER': os.environ.get('DB_USER', 'postgres'),
             'PASSWORD': os.environ.get('DB_PASSWORD'),
-            'HOST': os.environ.get('DB_HOST', 'tradeeasepro-db'),  # Dokploy service name
+            'HOST': os.environ.get('DB_HOST', 'postgres-service'),  # Dokploy service name
             'PORT': os.environ.get('DB_PORT', '5432'),
             'CONN_MAX_AGE': 60,
         }
@@ -322,7 +322,7 @@ else:
 
 # Redis Connection Settings for Pub-Sub - UPDATED
 REDIS_SETTINGS = {
-    'HOST': os.environ.get('REDIS_HOST', 'tradeeasepro-redis'),  # Dokploy service name
+    'HOST': os.environ.get('REDIS_HOST', 'redis-service'),  # Dokploy service name
     'PORT': int(os.environ.get('REDIS_PORT', 6379)),
     'DB': int(os.environ.get('REDIS_DB', 0)),
     'PASSWORD': os.environ.get('REDIS_PASSWORD'),
